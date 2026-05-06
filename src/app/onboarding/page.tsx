@@ -33,7 +33,8 @@ export default function Onboarding() {
       conditions: selectedConditions,
       dietType,
       proteinGoal,
-      routine
+      routine,
+      scanHistory: []
     });
     router.push('/');
   };
