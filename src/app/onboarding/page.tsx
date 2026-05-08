@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useUser } from '@/lib/user-context';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, ChevronRight, AlertCircle, Activity, Dumbbell, PersonStanding, Wind, Heart, Target, Ruler, Weight, User as UserIcon } from 'lucide-react';
+import { Check, ChevronRight, AlertCircle, Activity, Dumbbell, PersonStanding, Wind, Heart, Target, Ruler, Weight, Flame, User as UserIcon } from 'lucide-react';
 
 const ALLERGIES = ['Peanuts', 'Dairy', 'Gluten', 'Soy', 'Shellfish', 'Eggs', 'Tree Nuts'];
 const CONDITIONS = ['Diabetes', 'Hypertension', 'Celiac Disease', 'PCOS', 'IBS'];

@@ -23,6 +23,11 @@ export default function Home() {
   const [loadingAlerts, setLoadingAlerts] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (isLoggedIn && preferences?.city && !locationAlerts) {
@@ -32,6 +37,17 @@ export default function Home() {
         .finally(() => setLoadingAlerts(false));
     }
   }, [isLoggedIn, preferences?.city]);
+
+  if (!mounted || loading) {
+    return (
+      <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'var(--background)' }}>
+        <div style={{ background: 'var(--primary)', padding: '1rem', borderRadius: '1.5rem', marginBottom: '1rem', color: 'white' }}>
+          <Leaf size={32} className="animate-spin" />
+        </div>
+        <p style={{ color: 'var(--muted)', fontSize: '0.875rem', fontWeight: 500 }}>Initializing NutriScan AI...</p>
+      </div>
+    );
+  }
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
