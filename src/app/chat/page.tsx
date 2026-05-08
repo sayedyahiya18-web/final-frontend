@@ -123,7 +123,7 @@ export default function ChatPage() {
               borderTopLeftRadius: msg.role === 'user' ? '1.25rem' : '0.25rem',
               boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
             }}>
-              {msg.role === 'user' ? msg.content : <ReactMarkdown className="markdown-content">{msg.content}</ReactMarkdown>}
+              {msg.role === 'user' ? msg.content : <div className="markdown-content"><ReactMarkdown>{msg.content}</ReactMarkdown></div>}
             </div>
           </motion.div>
         ))}
