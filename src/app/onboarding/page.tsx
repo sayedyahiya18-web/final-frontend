@@ -39,8 +39,8 @@ export default function Onboarding() {
     }
   };
 
-  const handleFinish = () => {
-    setPreferences({
+  const handleFinish = async () => {
+    await setPreferences({
       username: preferences?.username || 'Friend',
       city: preferences?.city || '',
       allergies: selectedAllergies,

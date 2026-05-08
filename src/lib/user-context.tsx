@@ -1,6 +1,27 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState } from 'react';
+import { auth, db } from './firebase';
+import { 
+  onAuthStateChanged, 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword, 
+  signOut,
+  User
+} from 'firebase/auth';
+import { 
+  doc, 
+  getDoc, 
+  setDoc, 
+  updateDoc, 
+  arrayUnion, 
+  collection, 
+  query, 
+  orderBy, 
+  onSnapshot,
+  addDoc,
+  limit
+} from 'firebase/firestore';
 
 export type ScannedProduct = {
   barcode: string;
@@ -44,15 +65,17 @@ export type UserPreferences = {
 
 type UserContextType = {
   preferences: UserPreferences | null;
-  setPreferences: (prefs: UserPreferences) => void;
-  addToHistory: (product: ScannedProduct) => void;
-  addExerciseGoal: (minutes: number, activity: string) => void;
+  setPreferences: (prefs: UserPreferences) => Promise<void>;
+  addToHistory: (product: ScannedProduct) => Promise<void>;
+  addExerciseGoal: (minutes: number, activity: string) => Promise<void>;
   isLoggedIn: boolean;
-  login: (username?: string, city?: string) => void;
-  logout: () => void;
+  user: User | null;
+  loading: boolean;
+  login: (email: string, password: string, isSignUp: boolean, username?: string, city?: string) => Promise<void>;
+  logout: () => Promise<void>;
   communityPosts: CommunityPost[];
-  postToCommunity: (post: Omit<CommunityPost, 'id' | 'timestamp'>) => void;
-  joinCommunity: (name: string) => void;
+  postToCommunity: (post: Omit<CommunityPost, 'id' | 'timestamp'>) => Promise<void>;
+  joinCommunity: (name: string) => Promise<void>;
 };
 
 const defaultExerciseGoal: ExerciseGoal = {
@@ -63,102 +86,113 @@ const defaultExerciseGoal: ExerciseGoal = {
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
-const COMMUNITY_POSTS_KEY = 'nutriai_community_posts';
-
 export function UserProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
   const [preferences, setPrefs] = useState<UserPreferences | null>(null);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [communityPosts, setCommunityPosts] = useState<CommunityPost[]>([]);
 
   useEffect(() => {
-    const saved = localStorage.getItem('nutriai_user');
-    if (saved) {
-      const data = JSON.parse(saved);
-      setPrefs(data.preferences);
-      setIsLoggedIn(data.isLoggedIn);
-    }
-    const posts = localStorage.getItem(COMMUNITY_POSTS_KEY);
-    if (posts) {
-      setCommunityPosts(JSON.parse(posts));
-    }
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      setLoading(true);
+      if (firebaseUser) {
+        setUser(firebaseUser);
+        // Fetch preferences from Firestore
+        const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
+        if (userDoc.exists()) {
+          setPrefs(userDoc.data() as UserPreferences);
+        }
+      } else {
+        setUser(null);
+        setPrefs(null);
+      }
+      setLoading(false);
+    });
+
+    // Listen for community posts
+    const q = query(collection(db, 'community_posts'), orderBy('timestamp', 'desc'), limit(50));
+    const unsubscribePosts = onSnapshot(q, (snapshot) => {
+      const posts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as CommunityPost));
+      setCommunityPosts(posts);
+    });
+
+    return () => {
+      unsubscribe();
+      unsubscribePosts();
+    };
   }, []);
 
-  const login = (username?: string, city?: string) => {
-    setIsLoggedIn(true);
-    const updatedPrefs = preferences
-      ? {
-          ...preferences,
-          username: username || preferences.username || 'Friend',
-          city: city || preferences.city || '',
-        }
-      : null;
-    if (updatedPrefs) {
-      setPrefs(updatedPrefs);
-      localStorage.setItem(
-        'nutriai_user',
-        JSON.stringify({ isLoggedIn: true, preferences: updatedPrefs })
-      );
+  const login = async (email: string, password: string, isSignUp: boolean, username?: string, city?: string) => {
+    if (isSignUp) {
+      const res = await createUserWithEmailAndPassword(auth, email, password);
+      // Initialize user doc
+      const initialPrefs: UserPreferences = {
+        username: username || 'Friend',
+        city: city || '',
+        allergies: [],
+        conditions: [],
+        dietType: 'non-veg',
+        proteinGoal: 60,
+        routine: 'Sedentary',
+        community: null,
+        scanHistory: [],
+        exerciseGoal: defaultExerciseGoal
+      };
+      await setDoc(doc(db, 'users', res.user.uid), initialPrefs);
+      setPrefs(initialPrefs);
     } else {
-      localStorage.setItem(
-        'nutriai_user',
-        JSON.stringify({ isLoggedIn: true, preferences: null })
-      );
+      await signInWithEmailAndPassword(auth, email, password);
     }
   };
 
-  const logout = () => {
-    setIsLoggedIn(false);
-    setPrefs(null);
-    localStorage.removeItem('nutriai_user');
+  const logout = async () => {
+    await signOut(auth);
   };
 
-  const setPreferences = (prefs: UserPreferences) => {
-    const merged = {
-      ...prefs,
-      exerciseGoal: prefs.exerciseGoal || defaultExerciseGoal,
-    };
+  const setPreferences = async (prefs: UserPreferences) => {
+    if (!user) return;
+    const merged = { ...prefs, exerciseGoal: prefs.exerciseGoal || defaultExerciseGoal };
+    await setDoc(doc(db, 'users', user.uid), merged);
     setPrefs(merged);
-    setIsLoggedIn(true);
-    localStorage.setItem(
-      'nutriai_user',
-      JSON.stringify({ isLoggedIn: true, preferences: merged })
-    );
   };
 
-  const addToHistory = (product: ScannedProduct) => {
-    if (!preferences) return;
+  const addToHistory = async (product: ScannedProduct) => {
+    if (!user || !preferences) return;
     const newHistory = [product, ...(preferences.scanHistory || [])].slice(0, 50);
-    const newPrefs = { ...preferences, scanHistory: newHistory };
-    setPreferences(newPrefs);
+    await updateDoc(doc(db, 'users', user.uid), {
+      scanHistory: newHistory
+    });
+    setPrefs({ ...preferences, scanHistory: newHistory });
   };
 
-  const addExerciseGoal = (minutes: number, activity: string) => {
-    if (!preferences) return;
+  const addExerciseGoal = async (minutes: number, activity: string) => {
+    if (!user || !preferences) return;
     const current = preferences.exerciseGoal || defaultExerciseGoal;
     const newGoal: ExerciseGoal = {
       totalMinutes: current.totalMinutes + minutes,
       activity: activity || current.activity,
       completedMinutes: current.completedMinutes,
     };
-    const newPrefs = { ...preferences, exerciseGoal: newGoal };
-    setPreferences(newPrefs);
+    await updateDoc(doc(db, 'users', user.uid), {
+      exerciseGoal: newGoal
+    });
+    setPrefs({ ...preferences, exerciseGoal: newGoal });
   };
 
-  const joinCommunity = (name: string) => {
-    if (!preferences) return;
-    const newPrefs = { ...preferences, community: name };
-    setPreferences(newPrefs);
+  const joinCommunity = async (name: string) => {
+    if (!user || !preferences) return;
+    await updateDoc(doc(db, 'users', user.uid), {
+      community: name
+    });
+    setPrefs({ ...preferences, community: name });
   };
 
-  const postToCommunity = (post: Omit<CommunityPost, 'id' | 'timestamp'>) => {
-    const newPost: CommunityPost = {
+  const postToCommunity = async (post: Omit<CommunityPost, 'id' | 'timestamp'>) => {
+    if (!user) return;
+    await addDoc(collection(db, 'community_posts'), {
       ...post,
-      id: Math.random().toString(36).substr(2, 9),
-      timestamp: Date.now(),
-    };
-    const updated = [newPost, ...communityPosts];
-    setCommunityPosts(updated);
-    localStorage.setItem(COMMUNITY_POSTS_KEY, JSON.stringify(updated));
+      timestamp: Date.now()
+    });
   };
 
   return (
@@ -168,7 +202,9 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         setPreferences,
         addToHistory,
         addExerciseGoal,
-        isLoggedIn,
+        isLoggedIn: !!user,
+        user,
+        loading,
         login,
         logout,
         communityPosts,

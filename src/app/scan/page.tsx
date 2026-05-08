@@ -36,27 +36,31 @@ export default function ScanPage() {
   const handleScan = async (barcode: string) => {
     setShowScanner(false); setLoading(true); setError(null);
     setProduct(null); setInsight(null); setGoalAdded(false); setPostSent(false);
-    const productData = await getProductByBarcode(barcode);
-    if (productData) {
-      setProduct(productData);
-      const healthInsight = await generateHealthInsight(productData, preferences);
-      setInsight(healthInsight);
-      addToHistory({ barcode, name: productData.name, brand: productData.brand, timestamp: Date.now(), isSafe: healthInsight.isSafe });
-    } else {
-      setError('Product not found. Please try another barcode.');
+    try {
+      const productData = await getProductByBarcode(barcode);
+      if (productData) {
+        setProduct(productData);
+        const healthInsight = await generateHealthInsight(productData, preferences);
+        setInsight(healthInsight);
+        await addToHistory({ barcode, name: productData.name, brand: productData.brand, timestamp: Date.now(), isSafe: healthInsight.isSafe });
+      } else {
+        setError('Product not found. Please try another barcode.');
+      }
+    } catch (err) {
+      setError('An error occurred during scanning. Please try again.');
     }
     setLoading(false);
   };
 
-  const handleAddGoal = () => {
+  const handleAddGoal = async () => {
     if (!insight?.realityCheck?.exerciseToBurn) return;
-    addExerciseGoal(insight.realityCheck.exerciseToBurn.minutes, insight.realityCheck.exerciseToBurn.activity);
+    await addExerciseGoal(insight.realityCheck.exerciseToBurn.minutes, insight.realityCheck.exerciseToBurn.activity);
     setGoalAdded(true);
   };
 
-  const handlePostToCommunity = () => {
+  const handlePostToCommunity = async () => {
     if (!product || !insight || !preferences?.community) return;
-    postToCommunity({
+    await postToCommunity({
       username: preferences.username || 'Anonymous',
       community: preferences.community,
       productName: product.name,

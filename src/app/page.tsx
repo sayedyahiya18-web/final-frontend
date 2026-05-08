@@ -13,7 +13,7 @@ import {
 import Link from 'next/link';
 
 export default function Home() {
-  const { isLoggedIn, preferences, login, logout } = useUser();
+  const { isLoggedIn, preferences, login, logout, loading } = useUser();
   const [isLoginView, setIsLoginView] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -21,6 +21,7 @@ export default function Home() {
   const [city, setCity] = useState('');
   const [locationAlerts, setLocationAlerts] = useState<any>(null);
   const [loadingAlerts, setLoadingAlerts] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -32,10 +33,20 @@ export default function Home() {
     }
   }, [isLoggedIn, preferences?.city]);
 
-  const handleLoginSubmit = (e: React.FormEvent) => {
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    login(username || 'Friend', city);
-    if (!preferences) router.push('/onboarding');
+    setAuthError(null);
+    try {
+      await login(email, password, !isLoginView, username, city);
+      // If they have no preferences (newly signed up), they'll stay on onboarding logic
+      if (isLoginView && preferences) {
+        router.push('/');
+      } else if (!isLoginView) {
+        router.push('/onboarding');
+      }
+    } catch (err: any) {
+      setAuthError(err.message);
+    }
   };
 
   const heatColor = (risk: string) => {
@@ -71,15 +82,22 @@ export default function Home() {
           </div>
 
           <form onSubmit={handleLoginSubmit}>
-            <div style={{ marginBottom: '1rem' }}>
-              <label style={{ fontSize: '0.875rem', fontWeight: 600, marginLeft: '0.5rem', marginBottom: '0.5rem', display: 'block' }}>Username</label>
-              <input type="text" placeholder="@yourusername" className="input" value={username} onChange={e => setUsername(e.target.value)} style={{ marginBottom: 0 }} />
-            </div>
+            {authError && (
+              <div style={{ color: '#ef4444', fontSize: '0.8rem', marginBottom: '1rem', textAlign: 'center', background: 'rgba(239,68,68,0.1)', padding: '0.5rem', borderRadius: '0.5rem' }}>
+                {authError}
+              </div>
+            )}
+            {!isLoginView && (
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ fontSize: '0.875rem', fontWeight: 600, marginLeft: '0.5rem', marginBottom: '0.5rem', display: 'block' }}>Username</label>
+                <input type="text" placeholder="@yourusername" className="input" value={username} onChange={e => setUsername(e.target.value)} style={{ marginBottom: 0 }} />
+              </div>
+            )}
             <div style={{ marginBottom: '1rem' }}>
               <label style={{ fontSize: '0.875rem', fontWeight: 600, marginLeft: '0.5rem', marginBottom: '0.5rem', display: 'block' }}>Email</label>
               <input type="email" placeholder="hello@example.com" className="input" value={email} onChange={e => setEmail(e.target.value)} required autoComplete="email" style={{ marginBottom: 0 }} />
             </div>
-            <div style={{ marginBottom: '1rem' }}>
+            <div style={{ marginBottom: '1.5rem' }}>
               <label style={{ fontSize: '0.875rem', fontWeight: 600, marginLeft: '0.5rem', marginBottom: '0.5rem', display: 'block' }}>Password</label>
               <input type="password" placeholder="••••••••" className="input" value={password} onChange={e => setPassword(e.target.value)} required autoComplete="current-password" style={{ marginBottom: 0 }} />
             </div>
@@ -91,9 +109,9 @@ export default function Home() {
                 <input type="text" placeholder="e.g. Mumbai, India" className="input" value={city} onChange={e => setCity(e.target.value)} style={{ marginBottom: 0 }} />
               </div>
             )}
-            <button type="submit" className="btn btn-primary" style={{ marginTop: '0.5rem' }}>
-              {isLoginView ? 'Welcome Back' : 'Create Account'}
-              <ArrowRight size={20} />
+            <button type="submit" className="btn btn-primary" style={{ marginTop: '0.5rem' }} disabled={loading}>
+              {loading ? 'Processing...' : (isLoginView ? 'Welcome Back' : 'Create Account')}
+              {!loading && <ArrowRight size={20} />}
             </button>
           </form>
         </motion.div>

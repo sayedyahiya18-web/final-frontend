@@ -8,13 +8,14 @@
     "start": "next start"
   },
   "dependencies": {
-    "next": "^15.1.0",
-    "react": "18.3.1",
-    "react-dom": "18.3.1",
+    "@google/generative-ai": "latest",
+    "firebase": "^12.13.0",
+    "framer-motion": "latest",
     "html5-qrcode": "latest",
     "lucide-react": "latest",
-    "framer-motion": "latest",
-    "@google/generative-ai": "latest"
+    "next": "^15.1.0",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
   },
   "devDependencies": {
     "@types/node": "^20",
