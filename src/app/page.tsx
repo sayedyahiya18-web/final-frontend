@@ -142,7 +142,7 @@ export default function Home() {
     <div className="container">
       <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', marginTop: '1rem' }}>
         <div>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 800 }}>Hi, {preferences?.username || 'Friend'}! 👋</h2>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 800 }}>Hi, {preferences?.username || 'User'}! 👋</h2>
           <p style={{ color: 'var(--muted)', fontSize: '0.9rem' }}>
             {preferences?.city ? `📍 ${preferences.city}` : 'Ready for a healthy day?'}
           </p>

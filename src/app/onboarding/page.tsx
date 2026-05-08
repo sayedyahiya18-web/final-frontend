@@ -40,9 +40,9 @@ export default function Onboarding() {
   };
 
   const handleFinish = async () => {
+    if (!preferences) return;
     await setPreferences({
-      username: preferences?.username || 'Friend',
-      city: preferences?.city || '',
+      ...preferences,
       allergies: selectedAllergies,
       conditions: selectedConditions,
       dietType,

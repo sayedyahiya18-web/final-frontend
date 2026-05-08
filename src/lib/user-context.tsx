@@ -42,6 +42,12 @@ export type CommunityPost = {
   recommendation: string;
   warning: string | null;
   timestamp: number;
+  details?: {
+    realityCheck?: any;
+    smartSwap?: any;
+    ingredientInsights?: any[];
+    ingredients?: string;
+  };
 };
 
 export type ExerciseGoal = {
@@ -127,7 +133,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       const res = await createUserWithEmailAndPassword(auth, email, password);
       // Initialize user doc
       const initialPrefs: UserPreferences = {
-        username: username || 'Friend',
+        username: username && username.trim() !== '' ? username : 'User',
         city: city || '',
         allergies: [],
         conditions: [],

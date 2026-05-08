@@ -1,9 +1,10 @@
 'use client';
 
-import { useUser } from '@/lib/user-context';
+import { useState } from 'react';
+import { useUser, CommunityPost } from '@/lib/user-context';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, ChevronRight, CheckCircle2, AlertTriangle, Clock, Trophy } from 'lucide-react';
+import { Users, ChevronRight, CheckCircle2, AlertTriangle, Clock, Trophy, X, Info, Activity, Utensils, Flame } from 'lucide-react';
 import Link from 'next/link';
 
 const COMMUNITY_EMOJIS: Record<string, string> = {
@@ -12,6 +13,7 @@ const COMMUNITY_EMOJIS: Record<string, string> = {
 
 export default function CommunityPage() {
   const { preferences, communityPosts, joinCommunity, isLoggedIn } = useUser();
+  const [selectedPost, setSelectedPost] = useState<CommunityPost | null>(null);
   const router = useRouter();
 
   if (!isLoggedIn) {
@@ -19,7 +21,6 @@ export default function CommunityPage() {
     return null;
   }
 
-  const myPosts = communityPosts.filter(p => p.community === preferences?.community);
   const allPosts = communityPosts;
 
   const timeAgo = (ts: number) => {
@@ -100,15 +101,6 @@ export default function CommunityPage() {
             <Trophy size={28} />
           </div>
         </div>
-        <div style={{ marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
-          <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '0.85rem' }}>
-            {(preferences.username || 'A')[0].toUpperCase()}
-          </div>
-          <div>
-            <p style={{ fontSize: '0.8rem', fontWeight: 600 }}>@{preferences.username || 'you'}</p>
-            <p style={{ fontSize: '0.7rem', opacity: 0.75 }}>Member</p>
-          </div>
-        </div>
       </div>
 
       {/* Feed */}
@@ -140,13 +132,15 @@ export default function CommunityPage() {
             .map((post, idx) => (
               <motion.div key={post.id}
                 initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: idx * 0.06 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setSelectedPost(post)}
                 className="card"
-                style={{ padding: '1.25rem', marginBottom: '1rem', borderLeft: `4px solid ${post.isSafe ? '#22c55e' : '#ef4444'}` }}>
+                style={{ padding: '1.25rem', marginBottom: '1rem', borderLeft: `4px solid ${post.isSafe ? '#22c55e' : '#ef4444'}`, cursor: 'pointer' }}>
                 {/* Post Header */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.875rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
                     <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: 'linear-gradient(135deg, #8b5cf6, #6d28d9)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 800, fontSize: '0.85rem' }}>
-                      {(post.username || 'A')[0].toUpperCase()}
+                      {(post.username || 'U')[0].toUpperCase()}
                     </div>
                     <div>
                       <p style={{ fontWeight: 700, fontSize: '0.875rem' }}>@{post.username}</p>
@@ -173,18 +167,98 @@ export default function CommunityPage() {
                     {post.isSafe
                       ? <CheckCircle2 size={15} color="#22c55e" style={{ flexShrink: 0, marginTop: '2px' }} />
                       : <AlertTriangle size={15} color="#ef4444" style={{ flexShrink: 0, marginTop: '2px' }} />}
-                    <p style={{ fontSize: '0.82rem', color: 'var(--muted)', lineHeight: 1.5 }}>{post.recommendation}</p>
+                    <p style={{ fontSize: '0.82rem', color: 'var(--muted)', lineHeight: 1.4 }}>{post.recommendation}</p>
                   </div>
                 </div>
-
-                {post.warning && (
-                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start', background: 'rgba(239,68,68,0.06)', borderRadius: '0.75rem', padding: '0.625rem 0.875rem' }}>
-                    <AlertTriangle size={14} color="#ef4444" style={{ flexShrink: 0, marginTop: '2px' }} />
-                    <p style={{ fontSize: '0.8rem', color: '#dc2626', lineHeight: 1.4 }}>{post.warning}</p>
-                  </div>
-                )}
               </motion.div>
             ))
+        )}
+      </AnimatePresence>
+
+      {/* Detailed Modal */}
+      <AnimatePresence>
+        {selectedPost && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            style={{ position: 'fixed', inset: 0, zIndex: 3000, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}
+            onClick={() => setSelectedPost(null)}>
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="card glass"
+              style={{ width: '100%', maxWidth: '450px', maxHeight: '90vh', overflowY: 'auto', padding: '1.5rem', background: 'var(--background)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'linear-gradient(135deg, #8b5cf6, #6d28d9)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 800 }}>
+                    {(selectedPost.username || 'U')[0].toUpperCase()}
+                  </div>
+                  <div>
+                    <p style={{ fontWeight: 800, fontSize: '1rem' }}>@{selectedPost.username}</p>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>shared in {selectedPost.community}</p>
+                  </div>
+                </div>
+                <button onClick={() => setSelectedPost(null)} style={{ background: 'var(--secondary)', border: 'none', padding: '0.5rem', borderRadius: '50%', cursor: 'pointer' }}>
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+                <h2 style={{ fontSize: '1.5rem', fontWeight: 900, marginBottom: '0.25rem' }}>{selectedPost.productName}</h2>
+                <p style={{ color: 'var(--muted)', fontSize: '0.9rem' }}>{selectedPost.brand}</p>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: selectedPost.isSafe ? 'rgba(34,197,94,0.05)' : 'rgba(239,68,68,0.05)', padding: '1.25rem', borderRadius: '1.25rem', border: `1px solid ${selectedPost.isSafe ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)'}`, marginBottom: '1.5rem' }}>
+                <div style={{ width: '60px', height: '60px', borderRadius: '50%', border: `4px solid ${selectedPost.isSafe ? '#22c55e' : '#ef4444'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '1.25rem' }}>
+                  {selectedPost.healthScore}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontWeight: 800, color: selectedPost.isSafe ? '#166534' : '#991b1b' }}>{selectedPost.isSafe ? 'Healthy Pick' : 'Avoid if possible'}</p>
+                  <p style={{ fontSize: '0.85rem', lineHeight: 1.4, color: 'var(--muted)' }}>{selectedPost.recommendation}</p>
+                </div>
+              </div>
+
+              {selectedPost.details && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                  {/* Reality Check */}
+                  {selectedPost.details.realityCheck && (
+                    <div>
+                      <h4 style={{ fontSize: '0.9rem', fontWeight: 800, marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <Activity size={16} color="var(--primary)" /> Reality Check
+                      </h4>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                        <div style={{ background: 'var(--secondary)', padding: '0.75rem', borderRadius: '1rem', textAlign: 'center' }}>
+                          <Utensils size={18} style={{ margin: '0 auto 0.4rem', color: '#fbbf24' }} />
+                          <p style={{ fontSize: '0.9rem', fontWeight: 800 }}>{selectedPost.details.realityCheck.sugarTeaspoons} tsp sugar</p>
+                        </div>
+                        <div style={{ background: 'var(--secondary)', padding: '0.75rem', borderRadius: '1rem', textAlign: 'center' }}>
+                          <Flame size={18} style={{ margin: '0 auto 0.4rem', color: '#f87171' }} />
+                          <p style={{ fontSize: '0.9rem', fontWeight: 800 }}>{selectedPost.details.realityCheck.exerciseToBurn?.minutes}m {selectedPost.details.realityCheck.exerciseToBurn?.activity}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Ingredients */}
+                  {selectedPost.details.ingredientInsights && (
+                    <div>
+                      <h4 style={{ fontSize: '0.9rem', fontWeight: 800, marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <Info size={16} color="var(--primary)" /> Ingredient Insights
+                      </h4>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                        {selectedPost.details.ingredientInsights.slice(0, 3).map((item: any, i: number) => (
+                          <div key={i} style={{ background: 'var(--secondary)', padding: '0.75rem', borderRadius: '0.75rem', fontSize: '0.8rem' }}>
+                            <span style={{ fontWeight: 800 }}>{item.ingredient}:</span> {item.explanation}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <button className="btn btn-primary" style={{ marginTop: '2rem' }} onClick={() => setSelectedPost(null)}>
+                Close Details
+              </button>
+            </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>

@@ -6,6 +6,7 @@ import { chatWithAI } from '@/lib/api';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, User, Bot, Camera, Calendar, MessageSquare } from 'lucide-react';
 import Link from 'next/link';
+import ReactMarkdown from 'react-markdown';
 
 export default function ChatPage() {
   const { preferences } = useUser();
@@ -113,7 +114,7 @@ export default function ChatPage() {
               borderTopLeftRadius: msg.role === 'user' ? '1.25rem' : '0.25rem',
               boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
             }}>
-              {msg.content}
+              {msg.role === 'user' ? msg.content : <ReactMarkdown className="markdown-content">{msg.content}</ReactMarkdown>}
             </div>
           </motion.div>
         ))}

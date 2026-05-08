@@ -61,7 +61,7 @@ export default function ScanPage() {
   const handlePostToCommunity = async () => {
     if (!product || !insight || !preferences?.community) return;
     await postToCommunity({
-      username: preferences.username || 'Anonymous',
+      username: preferences.username || 'User',
       community: preferences.community,
       productName: product.name,
       brand: product.brand,
@@ -69,6 +69,12 @@ export default function ScanPage() {
       isSafe: insight.isSafe,
       recommendation: insight.recommendation,
       warning: insight.warning,
+      details: {
+        realityCheck: insight.realityCheck,
+        smartSwap: insight.smartSwap,
+        ingredientInsights: insight.ingredientInsights,
+        ingredients: product.ingredients
+      }
     });
     setPostSent(true);
     setShowPostModal(false);
