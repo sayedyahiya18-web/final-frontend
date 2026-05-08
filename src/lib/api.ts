@@ -67,16 +67,26 @@ export async function generateDietPlan(profile: any) {
 
 export async function chatWithAI(message: string, profile: any, currentProduct: any = null) {
   try {
+    console.log(`Calling API: ${API_BASE_URL}/chat`);
     const response = await fetch(`${API_BASE_URL}/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ query: message, profile, product: currentProduct })
     });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(`Server responded with ${response.status}: ${errorData.message || 'Unknown Error'}`);
+    }
+
     const data = await response.json();
     return data.reply;
   } catch (error: any) {
-    console.error("Chat AI Error:", error);
-    return `I'm having trouble connecting to the server.`;
+    console.error("Chat AI Error Details:", error);
+    if (error.message.includes('Failed to fetch')) {
+      return `Connection Error: I cannot reach the server at ${API_BASE_URL}. Please check your Vercel environment variables.`;
+    }
+    return `AI Error: ${error.message}`;
   }
 }
 
