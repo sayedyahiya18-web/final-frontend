@@ -8,12 +8,12 @@ import { getLocationHealthAlerts } from '@/lib/api';
 import { 
   Leaf, ArrowRight, ShieldCheck, Zap, Camera, LogOut,
   ChevronRight, Flame, Utensils, Apple, Droplets, 
-  AlertTriangle, Thermometer, Users, Activity, Target
+  AlertTriangle, Thermometer, Users, Activity, Target, Swords
 } from 'lucide-react';
 import Link from 'next/link';
 
 export default function Home() {
-  const { isLoggedIn, preferences, login, logout, loading } = useUser();
+  const { isLoggedIn, preferences, login, logout, loading, challenges } = useUser();
   const [isLoginView, setIsLoginView] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -347,6 +347,27 @@ export default function Home() {
           </Link>
         </section>
       )}
+
+      {/* Challenges Card */}
+      <section style={{ marginBottom: '2rem' }}>
+        <Link href="/challenges" style={{ textDecoration: 'none' }}>
+          <motion.div whileHover={{ y: -3 }} whileTap={{ scale: 0.98 }} className="card glass"
+            style={{ padding: '1.25rem', display: 'flex', alignItems: 'center', gap: '1rem', background: 'linear-gradient(135deg, rgba(245,158,11,0.06) 0%, rgba(217,119,6,0.03) 100%)', borderColor: 'rgba(245,158,11,0.2)' }}>
+            <div style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)', padding: '0.875rem', borderRadius: '1rem', color: 'white', flexShrink: 0 }}>
+              <Swords size={22} />
+            </div>
+            <div style={{ flex: 1 }}>
+              <h4 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: '0.2rem' }}>Nutrition Challenges</h4>
+              <p style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
+                {challenges.filter(c => c.status === 'active').length > 0
+                  ? `${challenges.filter(c => c.status === 'active').length} active challenge${challenges.filter(c => c.status === 'active').length > 1 ? 's' : ''}`
+                  : 'Bet on your discipline'}
+              </p>
+            </div>
+            <ChevronRight size={18} color="var(--muted)" />
+          </motion.div>
+        </Link>
+      </section>
 
       {/* Recent History */}
       {preferences?.scanHistory && preferences.scanHistory.length > 0 && (
