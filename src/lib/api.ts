@@ -24,19 +24,23 @@ export async function getProductByBarcode(barcode: string) {
 }
 
 export async function generateHealthInsight(product: any, profile: any) {
-  try {
     const response = await fetch(`${API_BASE_URL}/chat/insight`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ product, profile })
     });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.details || errorData.message || `Server Error (${response.status})`);
+    }
     return await response.json();
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error generating insight:', error);
     return {
       isSafe: true,
-      warning: null,
-      recommendation: "Checking backend...",
+      warning: error.message,
+      recommendation: `API Error: ${error.message}`,
       score: 0,
       realityCheck: { sugarTeaspoons: 0, exerciseToBurn: { activity: "walking", minutes: 0 } },
       smartSwap: { productName: "Checking...", reason: "Connecting to server" },
@@ -74,7 +78,8 @@ export async function chatWithAI(message: string, profile: any, currentProduct: 
     });
 
     if (!response.ok) {
-      throw new Error(`Server Error (${response.status})`);
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.details || errorData.message || `Server Error (${response.status})`);
     }
 
     const data = await response.json();
