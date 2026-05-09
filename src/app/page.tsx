@@ -41,7 +41,7 @@ export default function Home() {
   if (!mounted || loading) {
     return (
       <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'var(--background)' }}>
-        <div style={{ background: 'var(--primary)', padding: '1rem', borderRadius: '1.5rem', marginBottom: '1rem', color: 'white' }}>
+        <div style={{ background: 'var(--primary)', padding: '1rem', borderRadius: '1rem', marginBottom: '1rem', color: 'var(--primary-foreground)' }}>
           <Leaf size={32} className="animate-spin" />
         </div>
         <p style={{ color: 'var(--muted)', fontSize: '0.875rem', fontWeight: 500 }}>Initializing NutriScan AI...</p>
@@ -58,7 +58,6 @@ export default function Home() {
         return;
       }
       await login(email, password, !isLoginView, username, city);
-      // If they have no preferences (newly signed up), they'll stay on onboarding logic
       if (isLoginView && preferences) {
         router.push('/');
       } else if (!isLoginView) {
@@ -66,20 +65,14 @@ export default function Home() {
       }
     } catch (err: any) {
       console.error('Firebase error:', err);
-      if (err.code === 'auth/configuration-not-found') {
-        setAuthError('Firebase Authentication is not enabled. Please go to the Firebase Console > Build > Authentication and click "Get Started".');
-      } else if (err.code === 'auth/invalid-api-key') {
-        setAuthError('Invalid Firebase API Key. Please check your firebase.ts configuration.');
-      } else {
-        setAuthError(err.message || 'An error occurred. Please check your credentials.');
-      }
+      setAuthError(err.message || 'An error occurred. Please check your credentials.');
     }
   };
 
-  const heatColor = (risk: string) => {
-    if (risk === 'high') return { bg: 'rgba(239,68,68,0.08)', border: '#ef4444', icon: '#ef4444' };
-    if (risk === 'medium') return { bg: 'rgba(249,115,22,0.08)', border: '#f97316', icon: '#f97316' };
-    return { bg: 'rgba(34,197,94,0.08)', border: '#22c55e', icon: '#22c55e' };
+  const riskTheme = (risk: string) => {
+    if (risk === 'high') return { bg: 'rgba(239, 68, 68, 0.05)', border: '#ef4444', text: '#ef4444' };
+    if (risk === 'medium') return { bg: 'rgba(245, 158, 11, 0.05)', border: '#f59e0b', text: '#f59e0b' };
+    return { bg: 'var(--secondary)', border: 'var(--border)', text: 'var(--muted)' };
   };
 
   const exerciseGoal = preferences?.exerciseGoal;
@@ -89,74 +82,72 @@ export default function Home() {
 
   if (!isLoggedIn) {
     return (
-      <div className="container">
-        <header style={{ marginTop: '2rem', marginBottom: '3rem', textAlign: 'center' }}>
-          <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
-            style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
-            <div style={{ background: 'linear-gradient(135deg, var(--primary) 0%, #0d9488 100%)', padding: '1.25rem', borderRadius: '2rem', color: 'white', boxShadow: '0 10px 25px -5px rgba(13,148,136,0.4)' }}>
+      <div className="container" style={{ paddingTop: '4rem' }}>
+        <header style={{ marginBottom: '3rem', textAlign: 'center' }}>
+          <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+            style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
+            <div style={{ background: 'var(--primary)', padding: '1.25rem', borderRadius: '1.25rem', color: 'var(--primary-foreground)' }}>
               <Leaf size={40} />
             </div>
           </motion.div>
-          <h1 className="title">NutriScan AI</h1>
-          <p className="subtitle">Your personalized path to mindful eating</p>
+          <h1 className="title" style={{ background: 'none', webkitTextFillColor: 'initial', fontSize: '2.5rem' }}>NutriScan AI</h1>
+          <p className="subtitle">Sophisticated nutrition tracking & AI insights</p>
         </header>
 
-        <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }}
-          className="card glass" style={{ border: '1px solid var(--glass-border)' }}>
-          <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem' }}>
-            <button className={`btn ${isLoginView ? 'btn-primary' : 'btn-secondary'}`} style={{ flex: 1, borderRadius: '1rem' }} onClick={() => setIsLoginView(true)}>Login</button>
-            <button className={`btn ${!isLoginView ? 'btn-primary' : 'btn-secondary'}`} style={{ flex: 1, borderRadius: '1rem' }} onClick={() => setIsLoginView(false)}>Sign Up</button>
+        <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1 }}
+          className="card" style={{ boxShadow: '0 20px 40px rgba(0,0,0,0.04)' }}>
+          <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '2rem', background: 'var(--secondary)', padding: '0.25rem', borderRadius: 'var(--radius)' }}>
+            <button className={`btn ${isLoginView ? 'btn-primary' : ''}`} style={{ flex: 1, background: isLoginView ? 'var(--primary)' : 'transparent', color: isLoginView ? 'var(--primary-foreground)' : 'var(--muted)', fontSize: '0.875rem' }} onClick={() => setIsLoginView(true)}>Login</button>
+            <button className={`btn ${!isLoginView ? 'btn-primary' : ''}`} style={{ flex: 1, background: !isLoginView ? 'var(--primary)' : 'transparent', color: !isLoginView ? 'var(--primary-foreground)' : 'var(--muted)', fontSize: '0.875rem' }} onClick={() => setIsLoginView(false)}>Sign Up</button>
           </div>
 
           <form onSubmit={handleLoginSubmit}>
             {authError && (
-              <div style={{ color: '#ef4444', fontSize: '0.8rem', marginBottom: '1rem', textAlign: 'center', background: 'rgba(239,68,68,0.1)', padding: '0.5rem', borderRadius: '0.5rem' }}>
+              <div style={{ color: '#ef4444', fontSize: '0.8rem', marginBottom: '1rem', textAlign: 'center', background: 'rgba(239,68,68,0.05)', padding: '0.75rem', borderRadius: 'var(--radius)', border: '1px solid rgba(239,68,68,0.1)' }}>
                 {authError}
               </div>
             )}
             {!isLoginView && (
               <div style={{ marginBottom: '1rem' }}>
-                <label style={{ fontSize: '0.875rem', fontWeight: 600, marginLeft: '0.5rem', marginBottom: '0.5rem', display: 'block' }}>Username</label>
-                <input type="text" placeholder="@yourusername" className="input" value={username} onChange={e => setUsername(e.target.value)} style={{ marginBottom: 0 }} />
+                <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem', display: 'block' }}>Username</label>
+                <input type="text" placeholder="John Doe" className="input" value={username} onChange={e => setUsername(e.target.value)} />
               </div>
             )}
             <div style={{ marginBottom: '1rem' }}>
-              <label style={{ fontSize: '0.875rem', fontWeight: 600, marginLeft: '0.5rem', marginBottom: '0.5rem', display: 'block' }}>Email</label>
-              <input type="email" placeholder="hello@example.com" className="input" value={email} onChange={e => setEmail(e.target.value)} required autoComplete="email" style={{ marginBottom: 0 }} />
+              <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem', display: 'block' }}>Email Address</label>
+              <input type="email" placeholder="john@example.com" className="input" value={email} onChange={e => setEmail(e.target.value)} required />
             </div>
             <div style={{ marginBottom: '1.5rem' }}>
-              <label style={{ fontSize: '0.875rem', fontWeight: 600, marginLeft: '0.5rem', marginBottom: '0.5rem', display: 'block' }}>Password</label>
-              <input type="password" placeholder="••••••••" className="input" value={password} onChange={e => setPassword(e.target.value)} required autoComplete="current-password" style={{ marginBottom: 0 }} />
+              <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem', display: 'block' }}>Password</label>
+              <input type="password" placeholder="••••••••" className="input" value={password} onChange={e => setPassword(e.target.value)} required />
             </div>
             {!isLoginView && (
-              <div style={{ marginBottom: '1rem' }}>
-                <label style={{ fontSize: '0.875rem', fontWeight: 600, marginLeft: '0.5rem', marginBottom: '0.5rem', display: 'block' }}>
-                  📍 Your City <span style={{ color: 'var(--muted)', fontWeight: 400 }}>(mandatory for alerts)</span>
-                </label>
-                <input type="text" placeholder="e.g. Mumbai, India" className="input" value={city} onChange={e => setCity(e.target.value)} required style={{ marginBottom: 0 }} />
+              <div style={{ marginBottom: '1.5rem' }}>
+                <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem', display: 'block' }}>City for Health Alerts</label>
+                <input type="text" placeholder="London, UK" className="input" value={city} onChange={e => setCity(e.target.value)} required />
               </div>
             )}
-            <button type="submit" className="btn btn-primary" style={{ marginTop: '0.5rem' }} disabled={loading}>
-              {loading ? 'Processing...' : (isLoginView ? 'Welcome Back' : 'Create Account')}
-              {!loading && <ArrowRight size={20} />}
+            <button type="submit" className="btn btn-primary" style={{ padding: '1rem' }} disabled={loading}>
+              {loading ? 'Processing...' : (isLoginView ? 'Sign In' : 'Create Account')}
+              {!loading && <ArrowRight size={18} />}
             </button>
           </form>
         </motion.div>
 
-        <div style={{ marginTop: '3rem' }}>
-          <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '1.25rem', textAlign: 'center', opacity: 0.7 }}>POWERED BY AI</h3>
+        <div style={{ marginTop: '4rem' }}>
+          <p style={{ fontSize: '0.7rem', fontWeight: 700, marginBottom: '1.5rem', textAlign: 'center', color: 'var(--muted)', letterSpacing: '0.1em' }}>PRECISION NUTRITION TECHNOLOGY</p>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
             {[
-              { icon: <ShieldCheck size={24} color="var(--primary)" />, bg: 'rgba(45,212,191,0.1)', title: 'Safety Guard', desc: 'Instant allergen & condition checks' },
-              { icon: <Zap size={24} color="var(--accent)" />, bg: 'rgba(249,115,22,0.1)', title: 'Smart Analysis', desc: 'AI-powered nutritional grading' },
-              { icon: <Users size={24} color="#8b5cf6" />, bg: 'rgba(139,92,246,0.1)', title: 'Community', desc: 'Share scans with health communities' },
-              { icon: <Thermometer size={24} color="#0ea5e9" />, bg: 'rgba(14,165,233,0.1)', title: 'Local Alerts', desc: 'Heatwave & disease warnings near you' },
+              { icon: <ShieldCheck size={20} />, title: 'Safety First', desc: 'Real-time allergen tracking' },
+              { icon: <Zap size={20} />, title: 'AI Scoring', desc: 'Scientific data analysis' },
+              { icon: <Users size={20} />, title: 'Connect', desc: 'Healthy social groups' },
+              { icon: <Thermometer size={20} />, title: 'Local Data', desc: 'Regional health alerts' },
             ].map((f, i) => (
-              <motion.div key={i} whileHover={{ y: -5 }} className="card glass" style={{ padding: '1.25rem', marginBottom: 0, textAlign: 'center' }}>
-                <div style={{ background: f.bg, width: '48px', height: '48px', borderRadius: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>{f.icon}</div>
-                <h4 style={{ fontSize: '0.9rem', marginBottom: '0.5rem' }}>{f.title}</h4>
+              <div key={i} className="card" style={{ padding: '1.25rem', marginBottom: 0, textAlign: 'left', border: 'none', background: 'var(--secondary)' }}>
+                <div style={{ color: 'var(--primary)', marginBottom: '0.75rem' }}>{f.icon}</div>
+                <h4 style={{ fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.25rem' }}>{f.title}</h4>
                 <p style={{ fontSize: '0.75rem', color: 'var(--muted)', lineHeight: 1.4 }}>{f.desc}</p>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
@@ -167,245 +158,142 @@ export default function Home() {
   // ── DASHBOARD ─────────────────────────────────────────────────────────────
   return (
     <div className="container">
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', marginTop: '1rem' }}>
+      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
         <div>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 800 }}>Hi, {preferences?.username || 'User'}! 👋</h2>
-          <p style={{ color: 'var(--muted)', fontSize: '0.9rem' }}>
-            {preferences?.city ? `📍 ${preferences.city}` : 'Ready for a healthy day?'}
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 700, letterSpacing: '-0.02em' }}>Hello, {preferences?.username || 'User'}</h2>
+          <p style={{ color: 'var(--muted)', fontSize: '0.875rem' }}>
+            {preferences?.city ? `📍 ${preferences.city}` : 'Your daily nutrition overview'}
           </p>
         </div>
-        <button onClick={logout} style={{ background: 'var(--secondary)', border: 'none', padding: '0.75rem', borderRadius: '1rem', color: 'var(--muted)' }}>
-          <LogOut size={20} />
+        <button onClick={logout} className="btn" style={{ width: 'auto', padding: '0.6rem', borderRadius: '0.75rem', background: 'var(--secondary)', color: 'var(--muted)' }}>
+          <LogOut size={18} />
         </button>
       </header>
 
-      {/* Location Health Alert */}
-      {loadingAlerts && (
-        <div className="card" style={{ padding: '1rem 1.25rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <motion.div animate={{ rotate: 360 }} transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}>
-            <Thermometer size={20} color="var(--primary)" />
-          </motion.div>
-          <p style={{ fontSize: '0.875rem', color: 'var(--muted)' }}>Checking local health alerts...</p>
-        </div>
-      )}
-
+      {/* Health Alert */}
       {locationAlerts && !loadingAlerts && (
-        <motion.section initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} style={{ marginBottom: '1.5rem' }}>
-          {/* Heatwave + Water Card */}
-          <div className="card" style={{ padding: '1.25rem', background: heatColor(locationAlerts.heatwaveRisk).bg, borderColor: heatColor(locationAlerts.heatwaveRisk).border, marginBottom: '0.75rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <Thermometer size={20} color={heatColor(locationAlerts.heatwaveRisk).icon} />
-                <h4 style={{ fontWeight: 700, fontSize: '0.95rem' }}>
-                  {locationAlerts.heatwaveRisk === 'high' ? '🔥 High Heatwave Risk' : locationAlerts.heatwaveRisk === 'medium' ? '⚠️ Moderate Heat Alert' : '✅ Normal Conditions'}
-                </h4>
-              </div>
-              <span style={{ fontSize: '0.7rem', fontWeight: 700, padding: '0.2rem 0.6rem', borderRadius: '9999px', background: heatColor(locationAlerts.heatwaveRisk).border, color: 'white' }}>
-                {preferences?.city}
-              </span>
+        <motion.div initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} style={{ marginBottom: '2rem' }}>
+          <div className="card" style={{ padding: '1.25rem', background: riskTheme(locationAlerts.heatwaveRisk).bg, borderColor: riskTheme(locationAlerts.heatwaveRisk).border }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+              <Thermometer size={18} color={riskTheme(locationAlerts.heatwaveRisk).text} />
+              <h4 style={{ fontWeight: 600, fontSize: '0.9375rem', color: riskTheme(locationAlerts.heatwaveRisk).text }}>
+                {locationAlerts.heatwaveRisk === 'high' ? 'High Temperature Alert' : locationAlerts.heatwaveRisk === 'medium' ? 'Moderate Temperature Alert' : 'Normal Temperature'}
+              </h4>
             </div>
-            <p style={{ fontSize: '0.82rem', color: 'var(--muted)', marginBottom: '0.75rem', lineHeight: 1.5 }}>{locationAlerts.summary}</p>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(14,165,233,0.1)', padding: '0.625rem 0.875rem', borderRadius: '0.75rem' }}>
-              <Droplets size={18} color="#0ea5e9" />
-              <span style={{ fontWeight: 700, color: '#0ea5e9', fontSize: '0.875rem' }}>Daily water goal: {locationAlerts.waterGoalLitres}L</span>
+            <p style={{ fontSize: '0.8125rem', color: 'var(--muted)', marginBottom: '1rem', lineHeight: 1.5 }}>{locationAlerts.summary}</p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'var(--background)', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border)' }}>
+              <Droplets size={16} color="var(--accent)" />
+              <span style={{ fontWeight: 600, color: 'var(--foreground)', fontSize: '0.8125rem' }}>Water Goal: {locationAlerts.waterGoalLitres}L</span>
             </div>
           </div>
-
-          {/* Disease Alerts */}
-          {locationAlerts.diseaseAlerts?.length > 0 && (
-            <div className="card" style={{ padding: '1.25rem', borderColor: 'rgba(239,68,68,0.3)', background: 'rgba(239,68,68,0.04)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
-                <AlertTriangle size={18} color="#ef4444" />
-                <h4 style={{ fontWeight: 700, fontSize: '0.95rem', color: '#ef4444' }}>Disease Alerts Near You</h4>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                {locationAlerts.diseaseAlerts.map((alert: string, i: number) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
-                    <span style={{ color: '#ef4444', marginTop: '1px' }}>•</span>
-                    <p style={{ fontSize: '0.83rem', color: 'var(--foreground)', lineHeight: 1.4 }}>{alert}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </motion.section>
+        </motion.div>
       )}
 
-      {/* Daily Nutrition Overview */}
-      <section style={{ marginBottom: '2rem' }}>
-        <div className="card" style={{ padding: '1.5rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '1rem' }}>
+      {/* Main Stats */}
+      <section style={{ marginBottom: '1.5rem' }}>
+        <div className="card" style={{ padding: '1.5rem', background: 'var(--primary)', color: 'var(--primary-foreground)', border: 'none' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '1.25rem' }}>
             <div>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '0.25rem' }}>Daily Nutrition</h3>
-              <p style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>Consumed vs. Goal</p>
+              <p style={{ fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', opacity: 0.8, letterSpacing: '0.05em', marginBottom: '0.25rem' }}>Daily Progress</p>
+              <h3 style={{ fontSize: '1.5rem', fontWeight: 700 }}>1,420 <span style={{ fontSize: '0.875rem', fontWeight: 400, opacity: 0.8 }}>/ 2,100 kcal</span></h3>
             </div>
             <div style={{ textAlign: 'right' }}>
-              <span style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--primary)' }}>1,420</span>
-              <span style={{ fontSize: '0.9rem', color: 'var(--muted)' }}> / 2,100 kcal</span>
+              <p style={{ fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', opacity: 0.8, letterSpacing: '0.05em', marginBottom: '0.25rem' }}>Status</p>
+              <p style={{ fontSize: '0.9375rem', fontWeight: 600 }}>67% Hit</p>
             </div>
           </div>
-          <div style={{ height: '12px', background: 'var(--secondary)', borderRadius: '6px', overflow: 'hidden' }}>
-            <motion.div initial={{ width: 0 }} animate={{ width: '67%' }} transition={{ duration: 1.2, ease: "easeOut" }}
-              style={{ height: '100%', background: 'linear-gradient(90deg, var(--primary) 0%, #5eead4 100%)' }} />
+          <div style={{ height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '3px', overflow: 'hidden' }}>
+            <motion.div initial={{ width: 0 }} animate={{ width: '67%' }} transition={{ duration: 1 }}
+              style={{ height: '100%', background: 'var(--primary-foreground)' }} />
           </div>
         </div>
       </section>
 
-      {/* Macros */}
+      {/* Macros Grid */}
       <section style={{ marginBottom: '2rem' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.75rem' }}>
           {[
-            { label: 'Calories', value: '1.4k', color: '#2dd4bf', percent: 67 },
-            { label: 'Protein', value: '85g', color: '#60a5fa', percent: 70 },
-            { label: 'Carbs', value: '140g', color: '#fbbf24', percent: 56 },
-            { label: 'Fat', value: '45g', color: '#f87171', percent: 64 },
-          ].map((macro, idx) => (
-            <div key={idx} className="card" style={{ padding: '1rem 0.5rem', marginBottom: 0, textAlign: 'center' }}>
-              <div style={{ position: 'relative', width: '50px', height: '50px', margin: '0 auto 0.75rem' }}>
-                <svg width="50" height="50" viewBox="0 0 50 50">
-                  <circle cx="25" cy="25" r="22" fill="none" stroke="var(--secondary)" strokeWidth="4" />
-                  <motion.circle cx="25" cy="25" r="22" fill="none" stroke={macro.color} strokeWidth="4"
-                    strokeDasharray="138.2" initial={{ strokeDashoffset: 138.2 }}
-                    animate={{ strokeDashoffset: 138.2 - (138.2 * macro.percent) / 100 }}
-                    transition={{ duration: 1.5, delay: idx * 0.1 }} strokeLinecap="round" />
-                </svg>
-                <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.65rem', fontWeight: 700 }}>{macro.percent}%</div>
+            { label: 'Protein', value: '85g', target: '120g', percent: 70, color: 'var(--accent)' },
+            { label: 'Carbs', value: '140g', target: '250g', percent: 56, color: '#f59e0b' },
+            { label: 'Fats', value: '45g', target: '70g', percent: 64, color: '#10b981' },
+            { label: 'Fiber', value: '12g', target: '30g', percent: 40, color: '#8b5cf6' },
+          ].map((m, idx) => (
+            <div key={idx} className="card" style={{ padding: '1rem', marginBottom: 0 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--muted)' }}>{m.label}</span>
+                <span style={{ fontSize: '0.75rem', fontWeight: 600 }}>{m.percent}%</span>
               </div>
-              <h5 style={{ fontSize: '0.75rem', marginBottom: '0.25rem' }}>{macro.label}</h5>
-              <p style={{ fontSize: '0.65rem', color: 'var(--muted)', fontWeight: 600 }}>{macro.value}</p>
+              <div style={{ height: '4px', background: 'var(--secondary)', borderRadius: '2px', overflow: 'hidden', marginBottom: '0.5rem' }}>
+                <motion.div initial={{ width: 0 }} animate={{ width: `${m.percent}%` }} transition={{ duration: 1, delay: idx * 0.1 }}
+                  style={{ height: '100%', background: m.color }} />
+              </div>
+              <p style={{ fontSize: '0.8125rem', fontWeight: 700 }}>{m.value} <span style={{ fontWeight: 400, color: 'var(--muted)', fontSize: '0.7rem' }}>of {m.target}</span></p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* Hydration + Scan CTA */}
-      <section style={{ marginBottom: '2rem', display: 'flex', gap: '1rem' }}>
-        <div className="card" style={{ flex: 1.2, marginBottom: 0, padding: '1.25rem', background: 'rgba(56,189,248,0.05)', borderColor: 'rgba(56,189,248,0.2)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-            <h4 style={{ fontSize: '0.9rem', fontWeight: 700 }}>Hydration</h4>
-            <span style={{ fontSize: '0.75rem', color: '#0ea5e9', fontWeight: 700 }}>
-              1.8L / {locationAlerts?.waterGoalLitres || 2.5}L
-            </span>
-          </div>
-          <div style={{ display: 'flex', gap: '0.4rem' }}>
-            {Array.from({ length: Math.round((locationAlerts?.waterGoalLitres || 2.5) / 0.25) }, (_, i) => i + 1).slice(0, 10).map(i => (
-              <div key={i} style={{ flex: 1, height: '24px', borderRadius: '4px', background: i <= 7 ? '#38bdf8' : 'rgba(56,189,248,0.1)', transition: 'all 0.3s ease' }} />
-            ))}
-          </div>
-          <p style={{ fontSize: '0.7rem', color: 'var(--muted)', marginTop: '0.75rem', textAlign: 'center' }}>
-            Goal: {locationAlerts?.waterGoalLitres || 2.5}L/day
-          </p>
-        </div>
-        <Link href="/scan" style={{ flex: 1, textDecoration: 'none' }}>
-          <motion.div whileTap={{ scale: 0.95 }}
-            style={{ height: '100%', background: 'var(--primary)', borderRadius: 'var(--radius)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'white', gap: '0.5rem', boxShadow: '0 10px 20px rgba(15,118,110,0.2)' }}>
-            <Utensils size={24} />
-            <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>Add Meals</span>
-          </motion.div>
-        </Link>
-      </section>
-
-      {/* Exercise Goal Card */}
-      {exerciseGoal && exerciseGoal.totalMinutes > 0 && (
-        <motion.section initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} style={{ marginBottom: '2rem' }}>
-          <div className="card" style={{ padding: '1.25rem', background: 'rgba(249,115,22,0.05)', borderColor: 'rgba(249,115,22,0.25)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.875rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <Flame size={20} color="#f97316" />
-                <h4 style={{ fontWeight: 700, fontSize: '0.95rem' }}>Burn-Off Goal</h4>
-              </div>
-              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#f97316' }}>
-                {exerciseGoal.completedMinutes}/{exerciseGoal.totalMinutes} min
-              </span>
-            </div>
-            <div style={{ height: '10px', background: 'var(--secondary)', borderRadius: '5px', overflow: 'hidden', marginBottom: '0.5rem' }}>
-              <motion.div initial={{ width: 0 }} animate={{ width: `${exercisePercent}%` }} transition={{ duration: 1, ease: 'easeOut' }}
-                style={{ height: '100%', background: 'linear-gradient(90deg, #f97316, #ef4444)', borderRadius: '5px' }} />
-            </div>
-            <p style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>
-              {exerciseGoal.totalMinutes}min of {exerciseGoal.activity} from your scanned products
-            </p>
-          </div>
-        </motion.section>
-      )}
-
-      {/* Community card */}
-      {preferences?.community && (
-        <section style={{ marginBottom: '2rem' }}>
-          <Link href="/community" style={{ textDecoration: 'none' }}>
-            <motion.div whileHover={{ y: -3 }} whileTap={{ scale: 0.98 }} className="card glass"
-              style={{ padding: '1.25rem', display: 'flex', alignItems: 'center', gap: '1rem', background: 'linear-gradient(135deg, rgba(139,92,246,0.08) 0%, rgba(109,40,217,0.05) 100%)', borderColor: 'rgba(139,92,246,0.25)' }}>
-              <div style={{ background: 'linear-gradient(135deg, #8b5cf6, #6d28d9)', padding: '0.875rem', borderRadius: '1rem', color: 'white', flexShrink: 0 }}>
-                <Users size={22} />
-              </div>
+      {/* Challenges & Community */}
+      <section style={{ marginBottom: '2.5rem' }}>
+        <h3 style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1rem' }}>Engagement</h3>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          <Link href="/challenges" style={{ textDecoration: 'none' }}>
+            <div className="card" style={{ padding: '1.25rem', display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: 0 }}>
+              <div style={{ background: 'var(--primary)', color: 'var(--primary-foreground)', padding: '0.75rem', borderRadius: '0.75rem' }}><Swords size={20} /></div>
               <div style={{ flex: 1 }}>
-                <h4 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: '0.2rem' }}>{preferences.community} Community</h4>
-                <p style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>View posts & share your scans</p>
+                <h4 style={{ fontSize: '0.9375rem', fontWeight: 600, marginBottom: '0.1rem' }}>Nutrition Challenges</h4>
+                <p style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>
+                  {challenges.filter(c => c.status === 'active').length > 0 ? `${challenges.filter(c => c.status === 'active').length} active goals` : 'Bet on your discipline'}
+                </p>
               </div>
-              <ChevronRight size={18} color="var(--muted)" />
-            </motion.div>
+              <ChevronRight size={16} color="var(--muted)" />
+            </div>
           </Link>
-        </section>
-      )}
+          
+          <Link href="/community" style={{ textDecoration: 'none' }}>
+            <div className="card" style={{ padding: '1.25rem', display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: 0 }}>
+              <div style={{ background: 'var(--secondary)', color: 'var(--primary)', padding: '0.75rem', borderRadius: '0.75rem' }}><Users size={20} /></div>
+              <div style={{ flex: 1 }}>
+                <h4 style={{ fontSize: '0.9375rem', fontWeight: 600, marginBottom: '0.1rem' }}>Communities</h4>
+                <p style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>{preferences?.community || 'Join a health group'}</p>
+              </div>
+              <ChevronRight size={16} color="var(--muted)" />
+            </div>
+          </Link>
+        </div>
+      </section>
 
-      {/* Challenges Card */}
-      <section style={{ marginBottom: '2rem' }}>
-        <Link href="/challenges" style={{ textDecoration: 'none' }}>
-          <motion.div whileHover={{ y: -3 }} whileTap={{ scale: 0.98 }} className="card glass"
-            style={{ padding: '1.25rem', display: 'flex', alignItems: 'center', gap: '1rem', background: 'linear-gradient(135deg, rgba(245,158,11,0.06) 0%, rgba(217,119,6,0.03) 100%)', borderColor: 'rgba(245,158,11,0.2)' }}>
-            <div style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)', padding: '0.875rem', borderRadius: '1rem', color: 'white', flexShrink: 0 }}>
-              <Swords size={22} />
-            </div>
-            <div style={{ flex: 1 }}>
-              <h4 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: '0.2rem' }}>Nutrition Challenges</h4>
-              <p style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
-                {challenges.filter(c => c.status === 'active').length > 0
-                  ? `${challenges.filter(c => c.status === 'active').length} active challenge${challenges.filter(c => c.status === 'active').length > 1 ? 's' : ''}`
-                  : 'Bet on your discipline'}
-              </p>
-            </div>
-            <ChevronRight size={18} color="var(--muted)" />
-          </motion.div>
+      {/* Action Center */}
+      <section style={{ marginBottom: '2.5rem' }}>
+        <Link href="/scan" style={{ textDecoration: 'none' }}>
+          <div className="btn btn-primary" style={{ padding: '1.25rem', borderRadius: '1rem' }}>
+            <Camera size={20} />
+            <span>Start AI Food Analysis</span>
+          </div>
         </Link>
       </section>
 
-      {/* Recent History */}
+      {/* Recent Activity */}
       {preferences?.scanHistory && preferences.scanHistory.length > 0 && (
         <section style={{ marginBottom: '2rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: 700 }}>Recent Activity</h3>
-            <Link href="/history" style={{ fontSize: '0.85rem', color: 'var(--primary)', fontWeight: 600, textDecoration: 'none' }}>See all</Link>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+            <h3 style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Recent Scans</h3>
+            <Link href="/history" style={{ fontSize: '0.8125rem', color: 'var(--accent)', fontWeight: 600, textDecoration: 'none' }}>View History</Link>
           </div>
-          {preferences.scanHistory.slice(0, 2).map((item, idx) => (
-            <motion.div key={idx} initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: idx * 0.1 }}
-              className="card glass" style={{ padding: '1rem', display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.75rem' }}>
-              <div style={{ background: item.isSafe ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)', padding: '0.5rem', borderRadius: '0.75rem' }}>
-                <Apple size={24} color={item.isSafe ? '#22c55e' : '#ef4444'} />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            {preferences.scanHistory.slice(0, 3).map((item, idx) => (
+              <div key={idx} className="card" style={{ padding: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: 0 }}>
+                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: item.isSafe ? '#10b981' : '#ef4444' }} />
+                <div style={{ flex: 1 }}>
+                  <h5 style={{ margin: 0, fontSize: '0.875rem', fontWeight: 600 }}>{item.name}</h5>
+                  <p style={{ margin: 0, fontSize: '0.7rem', color: 'var(--muted)' }}>{item.brand}</p>
+                </div>
+                <span style={{ fontSize: '0.7rem', color: 'var(--muted)' }}>{new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
               </div>
-              <div style={{ flex: 1 }}>
-                <h5 style={{ margin: 0, fontSize: '0.95rem' }}>{item.name}</h5>
-                <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--muted)' }}>{item.brand}</p>
-              </div>
-              <ChevronRight size={18} color="var(--muted)" />
-            </motion.div>
-          ))}
+            ))}
+          </div>
         </section>
       )}
-
-      {/* Daily Tip */}
-      <section>
-        <div className="card glass" style={{ borderStyle: 'dashed', borderColor: 'var(--primary)', background: 'rgba(45,212,191,0.05)' }}>
-          <div style={{ display: 'flex', gap: '1rem' }}>
-            <div style={{ color: 'var(--primary)' }}><Utensils size={24} /></div>
-            <div>
-              <h4 style={{ fontSize: '1rem', marginBottom: '0.5rem' }}>Health Tip of the Day</h4>
-              <p style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.5 }}>
-                Try incorporating more protein into your breakfast. It helps stabilize blood sugar and keeps you feeling full longer!
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
     </div>
   );
 }

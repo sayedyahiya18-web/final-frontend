@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Newspaper, ChevronRight, ExternalLink, Clock, Bookmark, Share2, Search } from 'lucide-react';
+import { Newspaper, ChevronRight, ExternalLink, Clock, Bookmark, Search, ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
 import { fetchHealthNews } from '@/lib/api';
 
@@ -11,7 +11,7 @@ export default function NewsPage() {
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState('All');
 
-  const categories = ['All', 'Nutrition', 'Fitness', 'Science', 'Recipes', 'Mental Health'];
+  const categories = ['All', 'Nutrition', 'Fitness', 'Science', 'Mental Health'];
 
   useEffect(() => {
     async function loadNews() {
@@ -25,138 +25,84 @@ export default function NewsPage() {
 
   return (
     <div className="container">
-      <header style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <header style={{ marginBottom: '2.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+        <Link href="/" style={{ color: 'var(--muted)', background: 'var(--secondary)', padding: '0.5rem', borderRadius: '0.75rem' }}>
+          <ChevronLeft size={18} />
+        </Link>
         <div>
-          <h1 className="title" style={{ fontSize: '1.75rem', marginBottom: '0.25rem' }}>Daily Health</h1>
-          <p className="subtitle" style={{ fontSize: '0.9rem' }}>Curated nutrition & wellness news</p>
-        </div>
-        <div style={{ background: 'rgba(45, 212, 191, 0.1)', padding: '0.75rem', borderRadius: '1rem', color: 'var(--primary)' }}>
-          <Newspaper size={24} />
+          <h1 className="title" style={{ fontSize: '1.25rem', margin: 0 }}>Intelligence</h1>
+          <p className="subtitle" style={{ fontSize: '0.75rem', margin: 0 }}>Curated clinical & wellness news</p>
         </div>
       </header>
 
+      {/* Category Tabs */}
+      <div style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', paddingBottom: '1.5rem', scrollbarWidth: 'none' }}>
+        {categories.map((cat) => (
+          <button 
+            key={cat} 
+            onClick={() => setActiveCategory(cat)}
+            style={{ 
+              whiteSpace: 'nowrap', 
+              padding: '0.5rem 1rem', 
+              borderRadius: '2rem', 
+              border: activeCategory === cat ? '1px solid var(--primary)' : '1px solid var(--border)',
+              background: activeCategory === cat ? 'var(--primary)' : 'transparent',
+              color: activeCategory === cat ? 'var(--primary-foreground)' : 'var(--muted)',
+              fontSize: '0.8125rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            {cat}
+          </button>
+        ))}
+      </div>
+
       {loading ? (
-        <div style={{ textAlign: 'center', padding: '4rem 0' }}>
-          <motion.div animate={{ rotate: 360 }} transition={{ duration: 2, repeat: Infinity, ease: "linear" }}>
-            <Search size={48} color="var(--primary)" />
-          </motion.div>
-          <p style={{ marginTop: '1rem', color: 'var(--muted)' }}>Fetching {activeCategory} updates...</p>
+        <div style={{ textAlign: 'center', padding: '5rem 0' }}>
+          <Search size={32} className="animate-pulse" color="var(--muted)" />
+          <p style={{ marginTop: '1rem', color: 'var(--muted)', fontSize: '0.875rem' }}>Scanning archives...</p>
         </div>
       ) : (
-        <>
-          {news.length > 0 && (
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          {news.map((item, idx) => (
+            <motion.a 
+              href={item.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              key={item.id || idx}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: idx * 0.05 }}
               className="card" 
-              style={{ 
-                padding: 0, 
-                overflow: 'hidden', 
-                position: 'relative', 
-                height: '240px', 
-                border: 'none',
-                marginBottom: '2rem'
-              }}
+              style={{ padding: '1rem', display: 'flex', gap: '1rem', alignItems: 'center', textDecoration: 'none', color: 'inherit', marginBottom: 0 }}
             >
-              <a href={news[0].url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
-                <img 
-                  src={news[0].image} 
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                  alt="Featured"
-                />
-                <div style={{ 
-                  position: 'absolute', 
-                  bottom: 0, 
-                  left: 0, 
-                  right: 0, 
-                  padding: '1.5rem', 
-                  background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 100%)',
-                  color: 'white'
-                }}>
-                  <span style={{ 
-                    fontSize: '0.7rem', 
-                    background: 'var(--primary)', 
-                    padding: '0.2rem 0.6rem', 
-                    borderRadius: '0.5rem', 
-                    fontWeight: 700,
-                    marginBottom: '0.5rem',
-                    display: 'inline-block'
-                  }}>
-                    TRENDING
-                  </span>
-                  <h2 style={{ fontSize: '1.1rem', fontWeight: 800, lineHeight: 1.3 }}>{news[0].title}</h2>
-                </div>
-              </a>
-            </motion.div>
-          )}
-
-          {/* Categories Scroller */}
-          <div style={{ display: 'flex', gap: '0.75rem', overflowX: 'auto', paddingBottom: '1.5rem', scrollbarWidth: 'none', marginBottom: '1rem' }}>
-            {categories.map((cat) => (
-              <button 
-                key={cat} 
-                onClick={() => setActiveCategory(cat)}
-                style={{ 
-                  whiteSpace: 'nowrap', 
-                  padding: '0.5rem 1.25rem', 
-                  borderRadius: '2rem', 
-                  border: 'none',
-                  background: activeCategory === cat ? 'var(--primary)' : 'var(--secondary)',
-                  color: activeCategory === cat ? 'white' : 'var(--muted)',
-                  fontSize: '0.85rem',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease'
-                }}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
-
-          {/* News List */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            {news.map((item, idx) => (
-              <motion.a 
-                href={item.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                key={item.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.1 }}
-                className="card glass" 
-                style={{ padding: '0.75rem', display: 'flex', gap: '1rem', alignItems: 'center', textDecoration: 'none', color: 'inherit' }}
-              >
+              {item.image && (
                 <img 
                   src={item.image} 
-                  style={{ width: '80px', height: '80px', borderRadius: '0.75rem', objectFit: 'cover' }} 
-                  alt={item.title}
+                  style={{ width: '70px', height: '70px', borderRadius: '0.5rem', objectFit: 'cover', flexShrink: 0 }} 
+                  alt=""
                 />
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
-                    <span style={{ fontSize: '0.65rem', color: 'var(--primary)', fontWeight: 800 }}>{activeCategory === 'All' ? 'HEALTH' : activeCategory.toUpperCase()}</span>
-                    <span style={{ fontSize: '0.65rem', color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                      <Clock size={10} /> {item.time}
-                    </span>
-                  </div>
-                  <h4 style={{ fontSize: '0.9rem', fontWeight: 700, lineHeight: 1.3, marginBottom: '0.5rem' }}>{item.title}</h4>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '0.7rem', color: 'var(--muted)' }}>{item.source}</span>
-                    <div style={{ display: 'flex', gap: '0.5rem' }}>
-                      <Bookmark size={14} color="var(--muted)" />
-                      <ExternalLink size={14} color="var(--muted)" />
-                    </div>
-                  </div>
+              )}
+              <div style={{ flex: 1 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+                  <span style={{ fontSize: '0.65rem', color: 'var(--primary)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{item.source}</span>
+                  <span style={{ fontSize: '0.65rem', color: 'var(--muted)' }}>{item.time}</span>
                 </div>
-              </motion.a>
-            ))}
-          </div>
-        </>
+                <h4 style={{ fontSize: '0.875rem', fontWeight: 600, lineHeight: 1.4, marginBottom: '0.5rem', display: '-webkit-box', WebkitLineClamp: '2', WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{item.title}</h4>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.75rem', color: 'var(--muted)' }}>
+                  <ExternalLink size={12} />
+                  <span>Read Article</span>
+                </div>
+              </div>
+            </motion.a>
+          ))}
+        </div>
       )}
 
-      <footer style={{ textAlign: 'center', marginTop: '3rem', paddingBottom: '2rem' }}>
-        <p style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>Powered by NewsAPI • Updated daily</p>
+      <footer style={{ textAlign: 'center', marginTop: '4rem', paddingBottom: '3rem' }}>
+        <p style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>Clinical data refreshed daily • Intelligence by NewsAPI</p>
       </footer>
     </div>
   );

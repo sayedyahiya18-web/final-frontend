@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import {
   ChevronRight, Plus, Wallet, ArrowDownToLine,
-  Swords, Clock, Trophy, Copy, Check, X
+  Swords, Clock, Trophy, Copy, Check, X, ChevronLeft
 } from 'lucide-react';
 
 export default function ChallengesPage() {
@@ -92,323 +92,187 @@ export default function ChallengesPage() {
 
   return (
     <div className="container">
-      {/* Header */}
-      <header style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <div>
-          <h1 style={{ fontSize: '1.75rem', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: '0.15rem' }}>Challenges</h1>
-          <p style={{ color: 'var(--muted)', fontSize: '0.875rem' }}>Bet on your discipline</p>
-        </div>
-        <Link href="/" style={{ color: 'var(--muted)', background: 'var(--secondary)', padding: '0.5rem', borderRadius: '0.75rem', display: 'flex' }}>
-          <ChevronRight size={20} style={{ transform: 'rotate(180deg)' }} />
+      <header style={{ marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+        <Link href="/" style={{ color: 'var(--muted)', background: 'var(--secondary)', padding: '0.5rem', borderRadius: '0.75rem' }}>
+          <ChevronLeft size={18} />
         </Link>
+        <div>
+          <h1 className="title" style={{ fontSize: '1.25rem', margin: 0 }}>Challenges</h1>
+          <p className="subtitle" style={{ fontSize: '0.75rem', margin: 0 }}>Health betting arena</p>
+        </div>
       </header>
 
-      {/* Wallet Card */}
-      <motion.div
-        initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
-        style={{
-          background: 'linear-gradient(145deg, #1c1917 0%, #292524 100%)',
-          borderRadius: '1.25rem', padding: '1.5rem', marginBottom: '1.25rem', color: '#fafaf9',
-          boxShadow: '0 8px 30px rgba(0,0,0,0.12)'
-        }}
-      >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Wallet size={18} color="#a8a29e" />
-            <span style={{ fontSize: '0.8rem', color: '#a8a29e', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Balance</span>
-          </div>
-          <motion.button
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setShowDeposit(true)}
-            style={{
-              background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.1)',
-              color: '#fafaf9', padding: '0.4rem 0.875rem', borderRadius: '0.75rem',
-              fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.35rem'
-            }}
-          >
-            <ArrowDownToLine size={14} /> Add Funds
-          </motion.button>
+      {/* Wallet */}
+      <div className="card" style={{ padding: '1.5rem', background: 'var(--foreground)', color: 'var(--background)', border: 'none' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+          <span style={{ fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', opacity: 0.7 }}>Wallet Balance</span>
+          <button onClick={() => setShowDeposit(true)} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: 'inherit', padding: '0.4rem 0.75rem', borderRadius: '0.5rem', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer' }}>
+            + Add Funds
+          </button>
         </div>
-        <div style={{ fontSize: '2.5rem', fontWeight: 800, letterSpacing: '-0.04em', lineHeight: 1 }}>
-          <span style={{ fontSize: '1.25rem', fontWeight: 600, color: '#a8a29e', marginRight: '0.15rem' }}>Rs.</span>
-          {wallet.balance.toLocaleString()}
+        <div style={{ fontSize: '2.5rem', fontWeight: 700, letterSpacing: '-0.02em' }}>
+          <span style={{ fontSize: '1.25rem', opacity: 0.6 }}>Rs.</span>{wallet.balance.toLocaleString()}
         </div>
-        {wallet.transactions.length > 0 && (
-          <p style={{ fontSize: '0.75rem', color: '#78716c', marginTop: '0.75rem' }}>
-            Last: {wallet.transactions[0].desc}
-          </p>
-        )}
-      </motion.div>
-
-      {/* Action Buttons */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1.5rem' }}>
-        <motion.button
-          whileTap={{ scale: 0.96 }}
-          onClick={() => { setShowCreate(true); setCreatedCode(null); setError(null); }}
-          style={{
-            padding: '1rem', borderRadius: '1rem', border: '1px solid var(--border)', background: 'var(--card)',
-            cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem'
-          }}
-        >
-          <div style={{ background: 'rgba(245,158,11,0.1)', padding: '0.625rem', borderRadius: '0.75rem' }}>
-            <Plus size={20} color="#f59e0b" />
-          </div>
-          <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--foreground)' }}>Create</span>
-        </motion.button>
-        <motion.button
-          whileTap={{ scale: 0.96 }}
-          onClick={() => { setShowJoin(true); setError(null); }}
-          style={{
-            padding: '1rem', borderRadius: '1rem', border: '1px solid var(--border)', background: 'var(--card)',
-            cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem'
-          }}
-        >
-          <div style={{ background: 'rgba(59,130,246,0.1)', padding: '0.625rem', borderRadius: '0.75rem' }}>
-            <Swords size={20} color="#3b82f6" />
-          </div>
-          <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--foreground)' }}>Join</span>
-        </motion.button>
       </div>
 
-      {/* Created Code Banner */}
+      {/* Actions */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', margin: '1.5rem 0' }}>
+        <button className="btn btn-primary" onClick={() => { setShowCreate(true); setCreatedCode(null); }} style={{ padding: '1.25rem', borderRadius: '1rem' }}>
+          <Plus size={18} /> Create
+        </button>
+        <button className="btn btn-secondary" onClick={() => setShowJoin(true)} style={{ padding: '1.25rem', borderRadius: '1rem' }}>
+          <Swords size={18} /> Join
+        </button>
+      </div>
+
+      {/* Invitation Code */}
       <AnimatePresence>
         {createdCode && (
-          <motion.div
-            initial={{ y: -10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ opacity: 0 }}
-            style={{
-              background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.2)',
-              borderRadius: '1rem', padding: '1.25rem', marginBottom: '1.25rem', textAlign: 'center'
-            }}
-          >
-            <p style={{ fontSize: '0.8rem', color: 'var(--muted)', marginBottom: '0.5rem' }}>Share this code with your opponent</p>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem' }}>
-              <span style={{ fontSize: '1.75rem', fontWeight: 800, letterSpacing: '0.15em', color: '#b45309' }}>{createdCode}</span>
-              <button onClick={() => copyCode(createdCode)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#b45309' }}>
-                {copied ? <Check size={20} /> : <Copy size={20} />}
+          <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="card" style={{ padding: '1.25rem', textAlign: 'center', border: '1px dashed var(--primary)', background: 'rgba(16,185,129,0.02)' }}>
+            <p style={{ fontSize: '0.75rem', color: 'var(--muted)', marginBottom: '0.5rem' }}>Challenge Invite Code</p>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem' }}>
+              <span style={{ fontSize: '2rem', fontWeight: 800, letterSpacing: '0.1em', color: 'var(--primary)' }}>{createdCode}</span>
+              <button onClick={() => copyCode(createdCode)} style={{ background: 'var(--secondary)', border: 'none', padding: '0.5rem', borderRadius: '0.5rem', cursor: 'pointer' }}>
+                {copied ? <Check size={18} color="var(--primary)" /> : <Copy size={18} />}
               </button>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Error */}
-      {error && (
-        <div style={{ background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.15)', borderRadius: '0.75rem', padding: '0.75rem 1rem', marginBottom: '1rem', fontSize: '0.85rem', color: '#dc2626' }}>
-          {error}
-        </div>
-      )}
-
-      {/* Active Challenges */}
+      {/* Active */}
       {activeChallenges.length > 0 && (
-        <section style={{ marginBottom: '1.5rem' }}>
-          <h3 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-            <Swords size={16} color="#f59e0b" /> Active
-          </h3>
-          {activeChallenges.map((c, i) => (
-            <Link href={`/challenges/${c.id}`} key={c.id} style={{ textDecoration: 'none', color: 'inherit' }}>
-              <motion.div
-                initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: i * 0.05 }}
-                className="card"
-                style={{ padding: '1.25rem', borderLeft: '3px solid #f59e0b', cursor: 'pointer', marginBottom: '0.75rem' }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+        <section style={{ marginBottom: '2rem' }}>
+          <h3 style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1rem' }}>Active Contests</h3>
+          {activeChallenges.map((c) => (
+            <Link href={`/challenges/${c.id}`} key={c.id} style={{ textDecoration: 'none' }}>
+              <div className="card" style={{ padding: '1.25rem', marginBottom: '0.75rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
                   <div>
-                    <p style={{ fontWeight: 700, fontSize: '0.95rem' }}>{c.creatorName} vs {c.opponentName}</p>
-                    <p style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>Rs.{c.betAmount} each  ·  {getDaysLeft(c)} days left</p>
+                    <h4 style={{ fontWeight: 700, fontSize: '0.9375rem', marginBottom: '0.2rem' }}>{c.creatorName} vs {c.opponentName}</h4>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>Stake: Rs.{c.betAmount} · {getDaysLeft(c)}d left</p>
                   </div>
-                  <ChevronRight size={18} color="var(--muted)" />
+                  <ChevronRight size={16} color="var(--muted)" />
                 </div>
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  <div style={{ flex: 1, height: '6px', borderRadius: '3px', background: 'var(--secondary)', overflow: 'hidden' }}>
-                    <div style={{
-                      width: `${((c.creatorProgress.caloriesDaysHit + c.creatorProgress.proteinDaysHit) / (c.duration * 2)) * 100}%`,
-                      height: '100%', background: '#f59e0b', borderRadius: '3px'
-                    }} />
+                <div style={{ display: 'flex', gap: '0.4rem' }}>
+                  <div style={{ flex: 1, height: '4px', background: 'var(--secondary)', borderRadius: '2px' }}>
+                    <div style={{ width: `${((c.creatorProgress.caloriesDaysHit + c.creatorProgress.proteinDaysHit) / (c.duration * 2)) * 100}%`, height: '100%', background: 'var(--primary)', borderRadius: '2px' }} />
                   </div>
-                  <div style={{ flex: 1, height: '6px', borderRadius: '3px', background: 'var(--secondary)', overflow: 'hidden' }}>
-                    <div style={{
-                      width: `${((c.opponentProgress.caloriesDaysHit + c.opponentProgress.proteinDaysHit) / (c.duration * 2)) * 100}%`,
-                      height: '100%', background: '#3b82f6', borderRadius: '3px'
-                    }} />
+                  <div style={{ flex: 1, height: '4px', background: 'var(--secondary)', borderRadius: '2px' }}>
+                    <div style={{ width: `${((c.opponentProgress.caloriesDaysHit + c.opponentProgress.proteinDaysHit) / (c.duration * 2)) * 100}%`, height: '100%', background: 'var(--accent)', borderRadius: '2px' }} />
                   </div>
                 </div>
-              </motion.div>
+              </div>
             </Link>
           ))}
         </section>
       )}
 
-      {/* Waiting Challenges */}
+      {/* Waiting */}
       {waitingChallenges.length > 0 && (
-        <section style={{ marginBottom: '1.5rem' }}>
-          <h3 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-            <Clock size={16} color="var(--muted)" /> Waiting for Opponent
-          </h3>
+        <section style={{ marginBottom: '2rem' }}>
+          <h3 style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1rem' }}>Pending Opponent</h3>
           {waitingChallenges.map((c) => (
-            <div key={c.id} className="card" style={{ padding: '1.25rem', borderStyle: 'dashed', marginBottom: '0.75rem' }}>
+            <div key={c.id} className="card" style={{ padding: '1rem 1.25rem', borderStyle: 'dashed', marginBottom: '0.75rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <p style={{ fontWeight: 700, fontSize: '0.9rem' }}>Rs.{c.betAmount} · {c.duration} days</p>
-                  <p style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>{c.goals.dailyCalories} cal / {c.goals.dailyProtein}g protein daily</p>
+                <p style={{ fontWeight: 600, fontSize: '0.875rem' }}>Rs.{c.betAmount} · {c.duration} days</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'var(--secondary)', padding: '0.35rem 0.6rem', borderRadius: '0.5rem' }}>
+                  <span style={{ fontSize: '0.875rem', fontWeight: 700 }}>{c.inviteCode}</span>
+                  <Copy size={14} style={{ cursor: 'pointer' }} onClick={() => copyCode(c.inviteCode)} />
                 </div>
-                <button onClick={() => copyCode(c.inviteCode)} style={{
-                  background: 'var(--secondary)', border: 'none', padding: '0.5rem 0.875rem', borderRadius: '0.625rem',
-                  fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.35rem',
-                  color: 'var(--foreground)'
-                }}>
-                  <Copy size={14} /> {c.inviteCode}
-                </button>
               </div>
             </div>
           ))}
         </section>
       )}
 
-      {/* Completed */}
+      {/* History */}
       {completedChallenges.length > 0 && (
-        <section style={{ marginBottom: '1.5rem' }}>
-          <h3 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-            <Trophy size={16} color="#a8a29e" /> Completed
-          </h3>
-          {completedChallenges.map((c) => {
-            const isWinner = c.winner === preferences?.username || false;
-            const isTie = c.winner === 'tie';
-            return (
-              <Link href={`/challenges/${c.id}`} key={c.id} style={{ textDecoration: 'none', color: 'inherit' }}>
-                <div className="card" style={{ padding: '1rem 1.25rem', opacity: 0.75, marginBottom: '0.75rem' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <p style={{ fontWeight: 700, fontSize: '0.9rem' }}>{c.creatorName} vs {c.opponentName}</p>
-                    <span style={{
-                      fontSize: '0.75rem', fontWeight: 700, padding: '0.2rem 0.625rem', borderRadius: '9999px',
-                      background: isTie ? 'rgba(107,114,128,0.1)' : isWinner ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)',
-                      color: isTie ? '#6b7280' : isWinner ? '#16a34a' : '#dc2626'
-                    }}>
-                      {isTie ? 'Tie' : isWinner ? 'Won' : 'Lost'}
-                    </span>
-                  </div>
+        <section>
+          <h3 style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1rem' }}>Past Challenges</h3>
+          {completedChallenges.map((c) => (
+            <Link href={`/challenges/${c.id}`} key={c.id} style={{ textDecoration: 'none' }}>
+              <div className="card" style={{ padding: '1rem 1.25rem', marginBottom: '0.5rem', opacity: 0.6 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontWeight: 600, fontSize: '0.875rem' }}>{c.creatorName} vs {c.opponentName}</span>
+                  <span style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase' }}>{c.winner === 'tie' ? 'Tie' : c.winner === preferences?.username ? 'Won' : 'Lost'}</span>
                 </div>
-              </Link>
-            );
-          })}
+              </div>
+            </Link>
+          ))}
         </section>
       )}
-
-      {/* Empty state */}
-      {challenges.length === 0 && (
-        <div style={{ textAlign: 'center', padding: '3rem 1rem' }}>
-          <Swords size={48} color="var(--muted)" style={{ marginBottom: '1rem', opacity: 0.4 }} />
-          <h3 style={{ fontWeight: 700, marginBottom: '0.5rem', fontSize: '1.1rem' }}>No challenges yet</h3>
-          <p style={{ color: 'var(--muted)', fontSize: '0.875rem', lineHeight: 1.5 }}>
-            Create a challenge and share the invite code with a friend to get started.
-          </p>
-        </div>
-      )}
-
-      {/* ── MODALS ── */}
 
       {/* Deposit Modal */}
       <AnimatePresence>
         {showDeposit && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            style={{ position: 'fixed', inset: 0, zIndex: 3000, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'flex-end', padding: '1rem' }}
-            onClick={() => setShowDeposit(false)}
-          >
-            <motion.div initial={{ y: 80 }} animate={{ y: 0 }} exit={{ y: 80 }}
+            style={{ position: 'fixed', inset: 0, zIndex: 3000, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'flex-end' }}
+            onClick={() => setShowDeposit(false)}>
+            <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
               onClick={e => e.stopPropagation()}
-              style={{ width: '100%', maxWidth: '500px', margin: '0 auto', background: 'var(--card)', borderRadius: '1.5rem', padding: '1.75rem', boxShadow: '0 -10px 40px rgba(0,0,0,0.15)' }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-                <h3 style={{ fontWeight: 800, fontSize: '1.1rem' }}>Add Funds</h3>
-                <button onClick={() => setShowDeposit(false)} style={{ background: 'var(--secondary)', border: 'none', borderRadius: '50%', padding: '0.4rem', cursor: 'pointer' }}><X size={18} /></button>
-              </div>
-              <input type="number" placeholder="Amount in Rs." className="input" value={depositAmt} onChange={e => setDepositAmt(e.target.value)} style={{ marginBottom: '1rem' }} />
-              <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.25rem' }}>
-                {[100, 250, 500, 1000].map(a => (
-                  <button key={a} onClick={() => setDepositAmt(String(a))} style={{
-                    flex: 1, padding: '0.625rem', borderRadius: '0.75rem', border: '1px solid var(--border)',
-                    background: depositAmt === String(a) ? 'var(--foreground)' : 'var(--card)',
-                    color: depositAmt === String(a) ? 'var(--background)' : 'var(--foreground)',
-                    fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer'
-                  }}>
-                    {a}
-                  </button>
+              style={{ width: '100%', maxWidth: '480px', margin: '0 auto', background: 'var(--background)', borderRadius: '1.5rem 1.5rem 0 0', padding: '2rem 1.5rem' }}>
+              <h3 style={{ fontWeight: 700, marginBottom: '1.5rem' }}>Add Funds</h3>
+              <input type="number" placeholder="Enter amount" className="input" value={depositAmt} onChange={e => setDepositAmt(e.target.value)} />
+              <div style={{ display: 'flex', gap: '0.5rem', margin: '1.5rem 0' }}>
+                {[500, 1000, 2000].map(a => (
+                  <button key={a} onClick={() => setDepositAmt(String(a))} className="btn btn-secondary" style={{ flex: 1, padding: '0.75rem' }}>{a}</button>
                 ))}
               </div>
-              <button className="btn" onClick={handleDeposit} disabled={busy} style={{
-                background: '#1c1917', color: '#fafaf9', fontWeight: 700
-              }}>
-                {busy ? 'Processing...' : 'Deposit'}
-              </button>
+              <button className="btn btn-primary" onClick={handleDeposit} disabled={busy}>{busy ? 'Processing...' : 'Confirm Deposit'}</button>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Create Challenge Modal */}
+      {/* Create Modal */}
       <AnimatePresence>
         {showCreate && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            style={{ position: 'fixed', inset: 0, zIndex: 3000, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'flex-end', padding: '1rem' }}
-            onClick={() => setShowCreate(false)}
-          >
-            <motion.div initial={{ y: 80 }} animate={{ y: 0 }} exit={{ y: 80 }}
+            style={{ position: 'fixed', inset: 0, zIndex: 3000, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'flex-end' }}
+            onClick={() => setShowCreate(false)}>
+            <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
               onClick={e => e.stopPropagation()}
-              style={{ width: '100%', maxWidth: '500px', margin: '0 auto', background: 'var(--card)', borderRadius: '1.5rem', padding: '1.75rem', boxShadow: '0 -10px 40px rgba(0,0,0,0.15)' }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-                <h3 style={{ fontWeight: 800, fontSize: '1.1rem' }}>New Challenge</h3>
-                <button onClick={() => setShowCreate(false)} style={{ background: 'var(--secondary)', border: 'none', borderRadius: '50%', padding: '0.4rem', cursor: 'pointer' }}><X size={18} /></button>
-              </div>
-              <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--muted)', display: 'block', marginBottom: '0.35rem' }}>Bet Amount (Rs.)</label>
-              <input type="number" className="input" value={betAmt} onChange={e => setBetAmt(e.target.value)} />
-              <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--muted)', display: 'block', marginBottom: '0.35rem' }}>Duration (days)</label>
-              <input type="number" className="input" value={duration} onChange={e => setDuration(e.target.value)} />
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+              style={{ width: '100%', maxWidth: '480px', margin: '0 auto', background: 'var(--background)', borderRadius: '1.5rem 1.5rem 0 0', padding: '2rem 1.5rem' }}>
+              <h3 style={{ fontWeight: 700, marginBottom: '1.5rem' }}>Create Challenge</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--muted)', display: 'block', marginBottom: '0.35rem' }}>Daily Calories Goal</label>
-                  <input type="number" className="input" value={goalCal} onChange={e => setGoalCal(e.target.value)} />
+                  <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--muted)', display: 'block', marginBottom: '0.4rem' }}>Bet Amount (Rs.)</label>
+                  <input type="number" className="input" value={betAmt} onChange={e => setBetAmt(e.target.value)} />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--muted)', display: 'block', marginBottom: '0.35rem' }}>Daily Protein (g)</label>
-                  <input type="number" className="input" value={goalPro} onChange={e => setGoalPro(e.target.value)} />
+                  <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--muted)', display: 'block', marginBottom: '0.4rem' }}>Duration (Days)</label>
+                  <input type="number" className="input" value={duration} onChange={e => setDuration(e.target.value)} />
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                  <div>
+                    <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--muted)', display: 'block', marginBottom: '0.4rem' }}>Calorie Goal</label>
+                    <input type="number" className="input" value={goalCal} onChange={e => setGoalCal(e.target.value)} />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--muted)', display: 'block', marginBottom: '0.4rem' }}>Protein Goal (g)</label>
+                    <input type="number" className="input" value={goalPro} onChange={e => setGoalPro(e.target.value)} />
+                  </div>
                 </div>
               </div>
-              <button className="btn" onClick={handleCreate} disabled={busy} style={{
-                background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: 'white', fontWeight: 700, marginTop: '0.5rem'
-              }}>
-                {busy ? 'Creating...' : `Stake Rs.${betAmt} & Create`}
-              </button>
+              <button className="btn btn-primary" onClick={handleCreate} disabled={busy} style={{ marginTop: '1.5rem' }}>{busy ? 'Creating...' : 'Launch Challenge'}</button>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Join Challenge Modal */}
+      {/* Join Modal */}
       <AnimatePresence>
         {showJoin && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            style={{ position: 'fixed', inset: 0, zIndex: 3000, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'flex-end', padding: '1rem' }}
-            onClick={() => setShowJoin(false)}
-          >
-            <motion.div initial={{ y: 80 }} animate={{ y: 0 }} exit={{ y: 80 }}
+            style={{ position: 'fixed', inset: 0, zIndex: 3000, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'flex-end' }}
+            onClick={() => setShowJoin(false)}>
+            <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
               onClick={e => e.stopPropagation()}
-              style={{ width: '100%', maxWidth: '500px', margin: '0 auto', background: 'var(--card)', borderRadius: '1.5rem', padding: '1.75rem', boxShadow: '0 -10px 40px rgba(0,0,0,0.15)' }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-                <h3 style={{ fontWeight: 800, fontSize: '1.1rem' }}>Join Challenge</h3>
-                <button onClick={() => setShowJoin(false)} style={{ background: 'var(--secondary)', border: 'none', borderRadius: '50%', padding: '0.4rem', cursor: 'pointer' }}><X size={18} /></button>
-              </div>
-              <input
-                type="text" className="input" placeholder="Enter 6-letter invite code"
-                value={joinCode} onChange={e => setJoinCode(e.target.value.toUpperCase())}
-                style={{ textAlign: 'center', fontSize: '1.25rem', fontWeight: 800, letterSpacing: '0.15em' }}
-                maxLength={6}
-              />
-              <button className="btn" onClick={handleJoin} disabled={busy || joinCode.length !== 6} style={{
-                background: '#3b82f6', color: 'white', fontWeight: 700
-              }}>
-                {busy ? 'Joining...' : 'Join & Stake'}
-              </button>
+              style={{ width: '100%', maxWidth: '480px', margin: '0 auto', background: 'var(--background)', borderRadius: '1.5rem 1.5rem 0 0', padding: '2rem 1.5rem' }}>
+              <h3 style={{ fontWeight: 700, marginBottom: '1.5rem' }}>Join Contest</h3>
+              <input type="text" className="input" placeholder="Invite Code" value={joinCode} onChange={e => setJoinCode(e.target.value.toUpperCase())} maxLength={6} style={{ textAlign: 'center', fontSize: '1.5rem', fontWeight: 700, letterSpacing: '0.2em' }} />
+              <button className="btn btn-primary" onClick={handleJoin} disabled={busy || joinCode.length !== 6} style={{ marginTop: '1.5rem' }}>{busy ? 'Verifying...' : 'Join & Stake'}</button>
             </motion.div>
           </motion.div>
         )}
