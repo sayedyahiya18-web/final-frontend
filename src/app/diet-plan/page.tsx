@@ -56,7 +56,7 @@ export default function DietPlanPage() {
           <Calendar size={48} color="#ef4444" style={{ marginBottom: '1rem' }} />
           <h2 style={{ marginBottom: '0.5rem' }}>Oops!</h2>
           <p style={{ color: 'var(--muted)', marginBottom: '1.5rem' }}>{error || 'No plan available'}</p>
-          <button className="btn btn-primary" onClick={() => window.location.reload()}>Try Again</button>
+          <button className="btn btn-primary" onClick={() => typeof window !== 'undefined' && window.location.reload()}>Try Again</button>
         </div>
       </div>
     );

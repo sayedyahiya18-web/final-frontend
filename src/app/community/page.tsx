@@ -14,12 +14,20 @@ const COMMUNITY_EMOJIS: Record<string, string> = {
 export default function CommunityPage() {
   const { preferences, communityPosts, joinCommunity, isLoggedIn } = useUser();
   const [selectedPost, setSelectedPost] = useState<CommunityPost | null>(null);
+  const [mounted, setMounted] = useState(false);
   const router = useRouter();
 
-  if (!isLoggedIn) {
-    router.push('/');
-    return null;
-  }
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (mounted && !isLoggedIn) {
+      router.push('/');
+    }
+  }, [mounted, isLoggedIn, router]);
+
+  if (!mounted) return null;
 
   const allPosts = communityPosts;
 

@@ -27,8 +27,8 @@ export default function Scanner({ onScan, onClose }: ScannerProps) {
         }
 
         // 2. HTTPS/Secure Context Check
-        const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-        if (!window.isSecureContext && !isLocalhost) {
+        const isLocalhost = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+        if (typeof window !== 'undefined' && !window.isSecureContext && !isLocalhost) {
           setError('Camera access requires a secure (HTTPS) connection. Use the provided tunnel link for mobile testing.');
           return;
         }
@@ -152,7 +152,7 @@ export default function Scanner({ onScan, onClose }: ScannerProps) {
           <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'white', padding: '2rem', textAlign: 'center', background: 'rgba(0,0,0,0.8)' }}>
             <X size={48} color="#ef4444" />
             <p style={{ marginTop: '1rem' }}>{error}</p>
-            <button className="btn btn-primary" onClick={() => window.location.reload()} style={{ marginTop: '1rem' }}>
+            <button className="btn btn-primary" onClick={() => typeof window !== 'undefined' && window.location.reload()} style={{ marginTop: '1rem' }}>
               Retry Camera
             </button>
           </div>
