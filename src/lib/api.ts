@@ -1,5 +1,28 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
+// Robust Fetch Wrapper
+async function safeFetch(url: string, options: RequestInit = {}) {
+  try {
+    const response = await fetch(url, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `Server Error (${response.status})`);
+    }
+
+    return await response.json();
+  } catch (error: any) {
+    console.error(`API Call Failed (${url}):`, error.message);
+    throw error;
+  }
+}
+
 export async function getProductByBarcode(barcode: string) {
   try {
     const response = await fetch(`https://world.openfoodfacts.org/api/v2/product/${barcode}.json`);
@@ -12,7 +35,7 @@ export async function getProductByBarcode(barcode: string) {
       brand: data.product.brands || 'Unknown Brand',
       ingredients: data.product.ingredients_text || '',
       image: data.product.image_front_url,
-      nutrition: data.product.nutriments,
+      nutrition: data.product.nutriments || {},
       categories: data.product.categories_tags || [],
       allergens: data.product.allergens_tags || [],
       quantity: data.product.quantity
@@ -25,63 +48,53 @@ export async function getProductByBarcode(barcode: string) {
 
 export async function generateHealthInsight(product: any, profile: any) {
   try {
-    const response = await fetch(`${API_BASE_URL}/chat/insight`, {
+    return await safeFetch(`${API_BASE_URL}/chat/insight`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ product, profile })
     });
-    return await response.json();
-  } catch (error) {
-    console.error('Error generating insight:', error);
+  } catch (error: any) {
     return {
       isSafe: true,
-      warning: null,
-      recommendation: "Checking backend...",
-      score: 0,
+      warning: "AI Analysis is currently catching its breath.",
+      recommendation: "We couldn't get a deep AI analysis right now, but please check the ingredients list below manually.",
+      score: 50,
       realityCheck: { sugarTeaspoons: 0, exerciseToBurn: { activity: "walking", minutes: 0 } },
-      smartSwap: { productName: "Checking...", reason: "Connecting to server" },
+      smartSwap: { productName: "N/A", reason: "AI Service temporarily unavailable" },
       ingredientInsights: [],
-      voiceSummary: "Connecting to server."
+      voiceSummary: "AI analysis is temporarily unavailable. Please check ingredients manually."
     };
   }
 }
 
 export async function generateDietPlan(profile: any) {
   try {
-    const response = await fetch(`${API_BASE_URL}/chat/diet-plan`, {
+    return await safeFetch(`${API_BASE_URL}/chat/diet-plan`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ profile })
     });
-    return await response.json();
-  } catch (error) {
-    console.error('Error generating diet plan:', error);
+  } catch (error: any) {
     return {
-      dailyCalories: 0,
-      proteinTarget: 0,
-      meals: [],
-      tips: ['Failed to connect to server.']
+      dailyCalories: 2000,
+      proteinTarget: 50,
+      meals: [
+        { type: 'Breakfast', name: 'Healthy Oats', time: '8:00 AM', calories: 350 },
+        { type: 'Lunch', name: 'Fresh Salad', time: '1:00 PM', calories: 500 }
+      ],
+      tips: ['AI is busy. Here is a standard healthy plan for today!']
     };
   }
 }
 
 export async function chatWithAI(message: string, profile: any, currentProduct: any = null) {
   try {
-    const response = await fetch(`${API_BASE_URL}/chat`, {
+    const data = await safeFetch(`${API_BASE_URL}/chat`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ query: message, profile, product: currentProduct })
     });
-
-    if (!response.ok) {
-      throw new Error(`Server Error (${response.status})`);
-    }
-
-    const data = await response.json();
     return data.reply;
   } catch (error: any) {
     if (error.message.includes('Failed to fetch')) {
-      return `Connection Error: Cannot reach the server. Please check your internet or API settings.`;
+      return `Connection Error: I can't reach the server. It might be sleeping—please wait 30 seconds and try again.`;
     }
     return `AI Error: ${error.message}`;
   }
@@ -115,14 +128,11 @@ export async function fetchHealthNews(category: string = 'All') {
 
 export async function getLocationHealthAlerts(city: string) {
   try {
-    const response = await fetch(`${API_BASE_URL}/chat/location-health`, {
+    return await safeFetch(`${API_BASE_URL}/chat/location-health`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ city })
     });
-    return await response.json();
   } catch (error) {
-    console.error('Error fetching location health:', error);
     return {
       heatwaveRisk: 'low',
       waterGoalLitres: 2.5,
