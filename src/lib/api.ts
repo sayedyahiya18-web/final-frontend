@@ -24,6 +24,7 @@ export async function getProductByBarcode(barcode: string) {
 }
 
 export async function generateHealthInsight(product: any, profile: any) {
+  try {
     const response = await fetch(`${API_BASE_URL}/chat/insight`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
