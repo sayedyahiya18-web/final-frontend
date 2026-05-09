@@ -13,7 +13,8 @@ async function safeFetch(url: string, options: RequestInit = {}) {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || `Server Error (${response.status})`);
+      const msg = errorData.details ? `${errorData.message} (${errorData.details})` : (errorData.message || `Server Error (${response.status})`);
+      throw new Error(msg);
     }
 
     return await response.json();
