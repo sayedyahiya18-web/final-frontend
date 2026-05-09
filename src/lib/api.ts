@@ -4,7 +4,9 @@ export async function getProductByBarcode(barcode: string) {
   try {
     const response = await fetch(`https://world.openfoodfacts.org/api/v2/product/${barcode}.json`);
     const data = await response.json();
+    
     if (data.status === 0) return null;
+
     return {
       name: data.product.product_name || 'Unknown Product',
       brand: data.product.brands || 'Unknown Brand',
@@ -28,17 +30,13 @@ export async function generateHealthInsight(product: any, profile: any) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ product, profile })
     });
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.details || errorData.message || `Server Error (${response.status})`);
-    }
     return await response.json();
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error generating insight:', error);
     return {
       isSafe: true,
-      warning: error.message,
-      recommendation: `API Error: ${error.message}`,
+      warning: null,
+      recommendation: "Checking backend...",
       score: 0,
       realityCheck: { sugarTeaspoons: 0, exerciseToBurn: { activity: "walking", minutes: 0 } },
       smartSwap: { productName: "Checking...", reason: "Connecting to server" },
@@ -58,7 +56,12 @@ export async function generateDietPlan(profile: any) {
     return await response.json();
   } catch (error) {
     console.error('Error generating diet plan:', error);
-    return { dailyCalories: 0, proteinTarget: 0, meals: [], tips: ['Failed to connect to server.'] };
+    return {
+      dailyCalories: 0,
+      proteinTarget: 0,
+      meals: [],
+      tips: ['Failed to connect to server.']
+    };
   }
 }
 
@@ -69,13 +72,17 @@ export async function chatWithAI(message: string, profile: any, currentProduct: 
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ query: message, profile, product: currentProduct })
     });
+
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.details || errorData.message || `Server Error (${response.status})`);
+      throw new Error(`Server Error (${response.status})`);
     }
+
     const data = await response.json();
     return data.reply;
   } catch (error: any) {
+    if (error.message.includes('Failed to fetch')) {
+      return `Connection Error: Cannot reach the server. Please check your internet or API settings.`;
+    }
     return `AI Error: ${error.message}`;
   }
 }
@@ -85,7 +92,9 @@ export async function fetchHealthNews(category: string = 'All') {
   if (!apiKey) return [];
   const query = category === 'All' ? 'nutrition+OR+healthy+eating' : category.toLowerCase() + '+nutrition';
   try {
-    const response = await fetch(`https://newsapi.org/v2/everything?q=${query}&sortBy=publishedAt&language=en&pageSize=10&apiKey=${apiKey}`);
+    const response = await fetch(
+      `https://newsapi.org/v2/everything?q=${query}&sortBy=publishedAt&language=en&pageSize=10&apiKey=${apiKey}`
+    );
     const data = await response.json();
     if (data.status !== 'ok') throw new Error(data.message);
     return data.articles.map((article: any, idx: number) => ({
@@ -99,6 +108,7 @@ export async function fetchHealthNews(category: string = 'All') {
       url: article.url
     }));
   } catch (error) {
+    console.error('Error fetching news:', error);
     return [];
   }
 }
@@ -112,6 +122,12 @@ export async function getLocationHealthAlerts(city: string) {
     });
     return await response.json();
   } catch (error) {
-    return { heatwaveRisk: 'low', waterGoalLitres: 2.5, diseaseAlerts: [], summary: 'Stay hydrated.' };
+    console.error('Error fetching location health:', error);
+    return {
+      heatwaveRisk: 'low',
+      waterGoalLitres: 2.5,
+      diseaseAlerts: [],
+      summary: 'Stay hydrated and eat balanced meals.'
+    };
   }
 }
