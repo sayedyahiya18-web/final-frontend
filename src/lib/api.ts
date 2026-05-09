@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://final-backend-m30a.onrender.com/api';
+const API_BASE_URL = 'https://final-backend-m30a.onrender.com/api';
 
 // Robust Fetch Wrapper
 async function safeFetch(url: string, options: RequestInit = {}) {
